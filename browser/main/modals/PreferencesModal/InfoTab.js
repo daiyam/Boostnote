@@ -3,7 +3,6 @@ import CSSModules from 'browser/lib/CSSModules'
 import styles from './InfoTab.styl'
 import ConfigManager from 'browser/main/lib/ConfigManager'
 import store from 'browser/main/store'
-import AwsMobileAnalyticsConfig from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import _ from 'lodash'
 import i18n from 'browser/lib/i18n'
 
@@ -37,7 +36,6 @@ class InfoTab extends React.Component {
     }
 
     if (!newConfig.amaEnabled) {
-      AwsMobileAnalyticsConfig.recordDynamicCustomEvent('DISABLE_AMA')
       this.setState({
         amaMessage: i18n.__('We hope we will gain your trust')
       })
@@ -59,11 +57,6 @@ class InfoTab extends React.Component {
       type: 'SET_CONFIG',
       config: newConfig
     })
-  }
-
-  infoMessage () {
-    const { amaMessage } = this.state
-    return amaMessage ? <p styleName='policy-confirm'>{amaMessage}</p> : null
   }
 
   render () {
@@ -136,22 +129,6 @@ class InfoTab extends React.Component {
           </li>
         </ul>
 
-        <hr styleName='separate-line' />
-
-        <div styleName='policy'>{i18n.__('Analytics')}</div>
-        <div>{i18n.__('Boostnote collects anonymous data for the sole purpose of improving the application, and strictly does not collect any personal information such the contents of your notes.')}</div>
-        <div>{i18n.__('You can see how it works on ')}<a href='https://github.com/BoostIO/Boostnote' onClick={(e) => this.handleLinkClick(e)}>GitHub</a>.</div>
-        <br />
-        <div>{i18n.__('You can choose to enable or disable this option.')}</div>
-        <input onChange={(e) => this.handleConfigChange(e)}
-          checked={this.state.config.amaEnabled}
-          ref='amaEnabled'
-          type='checkbox'
-        />
-        {i18n.__('Enable analytics to help improve Boostnote')}<br />
-        <button styleName='policy-submit' onClick={(e) => this.handleSaveButtonClick(e)}>{i18n.__('Save')}</button>
-        <br />
-        {this.infoMessage()}
       </div>
     )
   }

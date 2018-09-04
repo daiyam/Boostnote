@@ -3,7 +3,6 @@ import React from 'react'
 import CSSModules from 'browser/lib/CSSModules'
 import styles from './TagSelect.styl'
 import _ from 'lodash'
-import AwsMobileAnalyticsConfig from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import i18n from 'browser/lib/i18n'
 import ee from 'browser/main/lib/eventEmitter'
 
@@ -67,7 +66,6 @@ class TagSelect extends React.Component {
   }
 
   submitTag () {
-    AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_TAG')
     let { value } = this.props
     let newTag = this.refs.newTag.value.trim().replace(/ +/g, '_')
     newTag = newTag.charAt(0) === '#' ? newTag.substring(1) : newTag

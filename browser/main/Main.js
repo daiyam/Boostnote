@@ -10,7 +10,6 @@ import Detail from './Detail'
 import dataApi from 'browser/main/lib/dataApi'
 import _ from 'lodash'
 import ConfigManager from 'browser/main/lib/ConfigManager'
-import mobileAnalytics from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import eventEmitter from 'browser/main/lib/eventEmitter'
 import { hashHistory } from 'react-router'
 import store from 'browser/main/store'
@@ -24,10 +23,6 @@ const { remote } = electron
 class Main extends React.Component {
   constructor (props) {
     super(props)
-
-    if (process.env.NODE_ENV === 'production') {
-      mobileAnalytics.initAwsMobileAnalytics()
-    }
 
     const { config } = props
 

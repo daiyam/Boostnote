@@ -13,19 +13,6 @@ const { dialog } = remote
 const zoomOptions = [0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
 
 class StatusBar extends React.Component {
-  updateApp () {
-    const index = dialog.showMessageBox(remote.getCurrentWindow(), {
-      type: 'warning',
-      message: i18n.__('Update Boostnote'),
-      detail: i18n.__('New Boostnote is ready to be installed.'),
-      buttons: [i18n.__('Restart & Install'), i18n.__('Not Now')]
-    })
-
-    if (index === 0) {
-      ipcRenderer.send('update-app-confirm')
-    }
-  }
-
   handleZoomButtonClick (e) {
     const templates = []
 
@@ -61,13 +48,6 @@ class StatusBar extends React.Component {
           <img src='../resources/icon/icon-zoom.svg' />
           <span>{Math.floor(config.zoom * 100)}%</span>
         </button>
-
-        {status.updateReady
-          ? <button onClick={this.updateApp} styleName='update'>
-            <i styleName='update-icon' className='fa fa-cloud-download' /> {i18n.__('Ready to Update!')}
-          </button>
-          : null
-        }
       </div>
     )
   }

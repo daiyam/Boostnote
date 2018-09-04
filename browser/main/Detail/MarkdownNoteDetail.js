@@ -15,7 +15,6 @@ import markdown from 'browser/lib/markdownTextHelper'
 import StatusBar from '../StatusBar'
 import _ from 'lodash'
 import { findNoteTitle } from 'browser/lib/findNoteTitle'
-import AwsMobileAnalyticsConfig from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import ConfigManager from 'browser/main/lib/ConfigManager'
 import TrashButton from './TrashButton'
 import FullscreenButton from './FullscreenButton'
@@ -117,7 +116,6 @@ class MarkdownNoteDetail extends React.Component {
           type: 'UPDATE_NOTE',
           note: note
         })
-        AwsMobileAnalyticsConfig.recordDynamicCustomEvent('EDIT_NOTE')
       })
   }
 
@@ -156,7 +154,6 @@ class MarkdownNoteDetail extends React.Component {
 
   handleStarButtonClick (e) {
     const { note } = this.state
-    if (!note.isStarred) AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_STAR')
 
     note.isStarred = !note.isStarred
 

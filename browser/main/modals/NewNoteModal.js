@@ -5,7 +5,6 @@ import dataApi from 'browser/main/lib/dataApi'
 import { hashHistory } from 'react-router'
 import ee from 'browser/main/lib/eventEmitter'
 import ModalEscButton from 'browser/components/ModalEscButton'
-import AwsMobileAnalyticsConfig from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import i18n from 'browser/lib/i18n'
 
 class NewNoteModal extends React.Component {
@@ -24,8 +23,6 @@ class NewNoteModal extends React.Component {
   }
 
   handleMarkdownNoteButtonClick (e) {
-    AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_MARKDOWN')
-    AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_ALLNOTE')
     const { storage, folder, dispatch, location } = this.props
     dataApi
       .createNote(storage, {
@@ -59,8 +56,6 @@ class NewNoteModal extends React.Component {
   }
 
   handleSnippetNoteButtonClick (e) {
-    AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_SNIPPET')
-    AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_ALLNOTE')
     const { storage, folder, dispatch, location, config } = this.props
 
     dataApi

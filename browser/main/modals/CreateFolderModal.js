@@ -6,7 +6,6 @@ import dataApi from 'browser/main/lib/dataApi'
 import store from 'browser/main/store'
 import consts from 'browser/lib/consts'
 import ModalEscButton from 'browser/components/ModalEscButton'
-import AwsMobileAnalyticsConfig from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import i18n from 'browser/lib/i18n'
 
 class CreateFolderModal extends React.Component {
@@ -51,7 +50,6 @@ class CreateFolderModal extends React.Component {
   }
 
   confirm () {
-    AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_FOLDER')
     if (this.state.name.trim().length > 0) {
       const { storage } = this.props
       const input = {
