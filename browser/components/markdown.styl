@@ -254,7 +254,7 @@ pre
       display block
       padding 0 .5em 0
 table
-  display block
+  display table
   width 100%
   margin 0 0 1em
   overflow-x auto
@@ -361,7 +361,7 @@ for name, val in admonition_types
     .admonition.{name}
         @extend $admonition
         border-left-color: val[color]
-    
+
     .admonition.{name}>.admonition-title
         @extend $admonition-title
         border-bottom-color: .1rem solid rgba(val[color], 0.2)
