@@ -101,7 +101,7 @@ function get () {
 
     if (!validate(config)) throw new Error('INVALID CONFIG')
   } catch (err) {
-    console.warn('Boostnote resets the invalid configuration.')
+    console.warn('Teanote resets the invalid configuration.')
     config = DEFAULT_CONFIG
     _save(config)
   }

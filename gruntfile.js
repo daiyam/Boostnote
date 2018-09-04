@@ -20,10 +20,10 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
     'create-windows-installer': {
       x64: {
-        appDirectory: path.join(__dirname, 'dist', 'Boostnote-win32-x64'),
+        appDirectory: path.join(__dirname, 'dist', 'Teanote-win32-x64'),
         outputDirectory: path.join(__dirname, 'dist'),
         authors: 'MAISIN&CO., Inc.',
-        exe: 'Boostnote.exe',
+        exe: 'Teanote.exe',
         loadingGif: path.join(__dirname, 'resources/boostnote-install.gif'),
         iconUrl: path.join(__dirname, 'resources/app.ico'),
         setupIcon: path.join(__dirname, 'resources/dmg.ico'),
@@ -35,9 +35,9 @@ module.exports = function (grunt) {
     'electron-installer-debian': {
       app: {
         options: {
-          name: 'boostnote',
-          productName: 'Boostnote',
-          genericName: 'Boostnote',
+          name: 'teanote',
+          productName: 'Teanote',
+          genericName: 'Teanote',
           productDescription: 'The opensource note app for developer.',
           arch: 'amd64',
           categories: [
@@ -45,18 +45,18 @@ module.exports = function (grunt) {
             'Utility'
           ],
           icon: path.join(__dirname, 'resources/app.png'),
-          bin: 'Boostnote'
+          bin: 'Teanote'
         },
-        src: path.join(__dirname, 'dist', 'Boostnote-linux-x64'),
+        src: path.join(__dirname, 'dist', 'Teanote-linux-x64'),
         dest: path.join(__dirname, 'dist')
       }
     },
     'electron-installer-redhat': {
       app: {
         options: {
-          name: 'boostnote',
-          productName: 'Boostnote',
-          genericName: 'Boostnote',
+          name: 'teanote',
+          productName: 'Teanote',
+          genericName: 'Teanote',
           productDescription: 'The opensource note app for developer.',
           arch: 'x86_64',
           categories: [
@@ -64,9 +64,9 @@ module.exports = function (grunt) {
             'Utility'
           ],
           icon: path.join(__dirname, 'resources/app.png'),
-          bin: 'Boostnote'
+          bin: 'Teanote'
         },
-        src: path.join(__dirname, 'dist', 'Boostnote-linux-x64'),
+        src: path.join(__dirname, 'dist', 'Teanote-linux-x64'),
         dest: path.join(__dirname, 'dist')
       }
     }
@@ -108,12 +108,12 @@ module.exports = function (grunt) {
     grunt.log.writeln(path.join(__dirname, 'dist'))
     var done = this.async()
     var opts = {
-      name: 'Boostnote',
+      name: 'Teanote',
       arch: 'x64',
       dir: __dirname,
       version: grunt.config.get('pkg.config.electron-version'),
       'app-version': grunt.config.get('pkg.version'),
-      'app-bundle-id': 'com.maisin.boost',
+      'app-bundle-id': 'org.zokugun.teanote',
       asar: false,
       prune: true,
       overwrite: true,
@@ -128,12 +128,12 @@ module.exports = function (grunt) {
           'version-string': {
             CompanyName: 'MAISIN&CO., Inc.',
             LegalCopyright: '© 2015 MAISIN&CO., Inc. All rights reserved.',
-            FileDescription: 'Boostnote',
-            OriginalFilename: 'Boostnote',
+            FileDescription: 'Teanote',
+            OriginalFilename: 'Teanote',
             FileVersion: grunt.config.get('pkg.version'),
             ProductVersion: grunt.config.get('pkg.version'),
-            ProductName: 'Boostnote',
-            InternalName: 'Boostnote'
+            ProductName: 'Teanote',
+            InternalName: 'Teanote'
           }
         })
         packager(opts, function (err, appPath) {
@@ -185,7 +185,7 @@ module.exports = function (grunt) {
       return
     }
 
-    ChildProcess.exec(`codesign --verbose --deep --force --sign \"${OSX_COMMON_NAME}\" dist/Boostnote-darwin-x64/Boostnote.app`,
+    ChildProcess.exec(`codesign --verbose --deep --force --sign \"${OSX_COMMON_NAME}\" dist/Teanote-darwin-x64/Teanote.app`,
       function (err, stdout, stderr) {
         grunt.log.writeln(stdout)
         if (err) {
@@ -200,7 +200,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('create-osx-installer', function () {
     var done = this.async()
-    var execPath = 'appdmg appdmg.json dist/Boostnote-mac.dmg'
+    var execPath = 'appdmg appdmg.json dist/Teanote-mac.dmg'
     grunt.log.writeln(execPath)
     ChildProcess.exec(execPath,
       function (err, stdout, stderr) {
@@ -219,7 +219,7 @@ module.exports = function (grunt) {
     var done = this.async()
     switch (platform) {
       case 'osx':
-        var execPath = 'cd dist/Boostnote-darwin-x64 && zip -r -y -q ../Boostnote-mac.zip Boostnote.app'
+        var execPath = 'cd dist/Teanote-darwin-x64 && zip -r -y -q ../Teanote-mac.zip Teanote.app'
         grunt.log.writeln(execPath)
         ChildProcess.exec(execPath,
           function (err, stdout, stderr) {

@@ -86,8 +86,8 @@ function notify (...args) {
 function updateApp () {
   const index = dialog.showMessageBox(remote.getCurrentWindow(), {
     type: 'warning',
-    message: i18n.__('Update Boostnote'),
-    detail: i18n.__('New Boostnote is ready to be installed.'),
+    message: i18n.__('Update Teanote'),
+    detail: i18n.__('New Teanote is ready to be installed.'),
     buttons: [i18n.__('Restart & Install'), i18n.__('Not Now')]
   })
 
@@ -131,7 +131,7 @@ ReactDOM.render((
       type: 'UPDATE_AVAILABLE'
     })
     notify('Update ready!', {
-      body: 'New Boostnote is ready to be installed.'
+      body: 'New Teanote is ready to be installed.'
     })
     updateApp()
   })
