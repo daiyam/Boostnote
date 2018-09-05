@@ -186,6 +186,7 @@ export default class CodeEditor extends React.Component {
           // Do nothing
         },
         Enter: 'boostNewLineAndIndentContinueMarkdownList',
+        'Cmd-D': 'deleteLine',
         'Ctrl-C': cm => {
           if (cm.getOption('keyMap').substr(0, 3) === 'vim') {
             document.execCommand('copy')
