@@ -135,6 +135,21 @@ body[data-theme="dark"]
 .sortableItemHelper
   z-index modalZIndex + 5
 
+.CodeMirror-line > span[role="presentation"]
+  display flex
+
+.cm-deflist-term
+  margin-top 0.3rem
+
+.cm-deflist-indent
+  min-width 3.3rem
+  max-width 3.3rem
+  white-space nowrap
+  overflow hidden
+
+  > .cm-tab:first-child
+    min-width: 2.1rem
+
 body[data-theme="solarized-dark"]
   ::-webkit-scrollbar-thumb
     background-color rgba(0, 0, 0, 0.3)
