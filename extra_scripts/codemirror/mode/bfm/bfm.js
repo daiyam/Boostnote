@@ -9,7 +9,7 @@
   'use strict'
 
   const blankLine = /^\s*$/
-  const definitionRegex = /^\s*[:~]/
+  const definitionRegex = /^\s*[:~]\s+/
 
   function matchWithBlankLine(stream, regex) {
     let index = 0
@@ -20,7 +20,6 @@
   }
 
   CodeMirror.defineMode('bfm', function (config, gfmConfig) {
-    console.log(config)
     var bfmOverlay = {
       startState: function() {
         return {
@@ -35,22 +34,22 @@
         }
       },
       token: function(stream, state) {
+        state.combineTokens = true
+
         if (state.definitionIndent) {
           state.definitionIndent = false
 
           stream.skipToEnd()
 
           return 'deflist deflist-def'
-        }
-        else if (state.definitionTerm) {
+        } else if (state.definitionTerm) {
           if (stream.match(definitionRegex)) {
             state.definitionIndent = true
 
             stream.eatSpace()
 
             return 'deflist deflist-indent'
-          }
-          else {
+          } else {
             state.definitionTerm = false
           }
         }
@@ -67,14 +66,15 @@
         return null
       },
       blankLine: function(state) {
-        state.definition = false
+        state.definitionTerm = false
+
         return null
       }
     }
 
     gfmConfig.name = 'gfm'
     return CodeMirror.overlayMode(CodeMirror.getMode(config, gfmConfig), bfmOverlay)
-  }, 'gfm');
+  }, 'gfm')
 
   CodeMirror.defineMIME('text/x-bfm', 'bfm')
 

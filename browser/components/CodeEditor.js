@@ -195,8 +195,6 @@ export default class CodeEditor extends React.Component {
       }
     })
 
-    this.setMode(this.props.mode)
-
     this.editor.on('focus', this.focusHandler)
     this.editor.on('blur', this.blurHandler)
     this.editor.on('change', this.changeHandler)
@@ -217,6 +215,16 @@ export default class CodeEditor extends React.Component {
 
     this.tableEditor = new TableEditor(new TextEditorInterface(this.editor))
     eventEmitter.on('code:format-table', this.formatTable)
+
+    this.editor.on('renderLine', function(cm, line, el) {
+      if (el.getElementsByClassName('cm-deflist-indent').length > 0) {
+        el.classList.add('cm-deflist-defline')
+      } else if (el.classList.contains('cm-deflist-defline')) {
+        el.classList.remove('cm-deflist-defline')
+      }
+    })
+
+    this.setMode(this.props.mode)
   }
 
   expandSnippet (line, cursor, cm, snippets) {
