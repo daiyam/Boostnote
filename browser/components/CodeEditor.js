@@ -175,7 +175,7 @@ export default class CodeEditor extends React.Component {
               }
             } else {
               const currentMode = cm.getModeAt(cursor)
-              if(currentMode.name === 'yaml') {
+              if (currentMode.name === 'yaml') {
                 cm.execCommand('insertYamlTab')
               } else {
                 if (tabs) {
