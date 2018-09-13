@@ -174,10 +174,15 @@ export default class CodeEditor extends React.Component {
                 }
               }
             } else {
-              if (tabs) {
-                cm.execCommand('insertTab')
+              const currentMode = cm.getModeAt(cursor)
+              if(currentMode.name === 'yaml') {
+                cm.execCommand('insertYamlTab')
               } else {
-                cm.execCommand('insertSoftTab')
+                if (tabs) {
+                  cm.execCommand('insertTab')
+                } else {
+                  cm.execCommand('insertSoftTab')
+                }
               }
             }
           }
