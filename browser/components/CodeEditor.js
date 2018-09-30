@@ -297,6 +297,10 @@ export default class CodeEditor extends React.Component {
       this.editor.on('cursorActivity', this.editorActivityHandler)
       this.editor.on('changes', this.editorActivityHandler)
     }
+
+    this.setState({
+      clientWidth: this.refs.root.clientWidth
+    })
   }
 
   expandSnippet (line, cursor, cm, snippets) {
@@ -444,6 +448,14 @@ export default class CodeEditor extends React.Component {
 
       this.extraKeysMode = 'default'
       this.editor.setOption('extraKeys', this.defaultKeyMap)
+    }
+
+    if (this.state.clientWidth !== this.refs.root.clientWidth) {
+      this.setState({
+        clientWidth: this.refs.root.clientWidth
+      })
+
+      needRefresh = true
     }
 
     if (needRefresh) {
