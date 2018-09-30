@@ -43,7 +43,7 @@ class Blog extends React.Component {
     this.handleSettingError = (err) => {
       this.setState({BlogAlert: {
         type: 'error',
-        message: err.message != null ? err.message : i18n.__('An error occurred!')
+        message: err.message != null ? err.message : i18n.__('Error occurs!')
       }})
     }
     this.oldBlog = this.state.config.blog
@@ -70,7 +70,7 @@ class Blog extends React.Component {
       this.props.haveToSave({
         tab: 'Blog',
         type: 'warning',
-        message: i18n.__('Unsaved Changes!')
+        message: i18n.__('You have to save!')
       })
     }
   }

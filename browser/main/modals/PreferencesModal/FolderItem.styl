@@ -2,7 +2,6 @@
   height 35px
   box-sizing border-box
   padding 2.5px 15px
-  display flex
   &:hover
     background-color darken(white, 3%)
 
@@ -19,10 +18,7 @@
   border-left solid 2px transparent
   padding 0 10px
   line-height 30px
-  flex 1
-  white-space nowrap
-  text-overflow ellipsis
-  overflow hidden
+  float left
 .folderItem-left-danger
   color $danger-color
   font-weight bold
@@ -56,8 +52,7 @@
   outline none
 
 .folderItem-right
-  -webkit-box-flex: 1
-  white-space nowrap
+  float right
 
 .folderItem-right-button
   vertical-align middle
