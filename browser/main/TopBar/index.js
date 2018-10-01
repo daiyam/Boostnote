@@ -23,6 +23,8 @@ class TopBar extends React.Component {
     this.focusSearchHandler = () => {
       this.handleOnSearchFocus()
     }
+
+    this.codeInitHandler = this.handleCodeInit.bind(this)
   }
 
   componentDidMount () {
@@ -148,6 +150,10 @@ class TopBar extends React.Component {
     } else {
       el.select()
     }
+  }
+
+  handleCodeInit () {
+    ee.emit('top:search', this.refs.searchInput.value)
   }
 
   render () {
