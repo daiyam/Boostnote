@@ -41,30 +41,26 @@ class Detail extends React.Component {
 
     if (location.query.key != null) {
       const noteKey = location.query.key
-      const allNotes = data.noteMap.map(note => note)
-      const trashedNotes = data.trashedSet.toJS().map(uniqueKey => data.noteMap.get(uniqueKey))
-      let displayedNotes = allNotes
+      let notes = data.noteMap.map(note => note)
 
-      if (location.pathname.match(/\/searched/)) {
-        const searchStr = params.searchword
-        displayedNotes = searchStr === undefined || searchStr === '' ? allNotes
-          : searchFromNotes(allNotes, searchStr)
+      if (location.pathname === '/trashed') {
+        notes = notes.filter(note => note.isTrashed)
+      } else {
+        notes = notes.filter(note => !note.isTrashed)
       }
 
       if (location.pathname.match(/\/tags/)) {
-        const listOfTags = params.tagname.split(' ')
-        displayedNotes = data.noteMap.map(note => note).filter(note =>
-          listOfTags.every(tag => note.tags.includes(tag))
-        )
+        const tags = params.tagname.split(' ')
+        notes = notes.filter(note => tags.every(tag => note.tags.includes(tag)))
       }
 
-      if (location.pathname.match(/\/trashed/)) {
-        displayedNotes = trashedNotes
-      } else {
-        displayedNotes = _.differenceWith(displayedNotes, trashedNotes, (note, trashed) => note.key === trashed.key)
+      if (typeof location.query.search !== 'undefined' && location.query.search !== '') {
+        const search = decodeURIComponent(location.query.search)
+
+        notes = searchFromNotes(notes, search)
       }
 
-      const noteKeys = displayedNotes.map(note => note.key)
+      const noteKeys = notes.map(note => note.key)
       if (noteKeys.includes(noteKey)) {
         note = data.noteMap.get(noteKey)
       }

@@ -6,13 +6,13 @@ import _ from 'lodash'
 import ee from 'browser/main/lib/eventEmitter'
 import NewNoteButton from 'browser/main/NewNoteButton'
 import i18n from 'browser/lib/i18n'
+import { locateSearch } from 'browser/lib/location'
 
 class TopBar extends React.Component {
   constructor (props) {
     super(props)
 
     this.state = {
-      search: '',
       searchOptions: [],
       isSearching: false,
       isAlphabet: false,
@@ -23,8 +23,6 @@ class TopBar extends React.Component {
     this.focusSearchHandler = () => {
       this.handleOnSearchFocus()
     }
-
-    this.codeInitHandler = this.handleCodeInit.bind(this)
   }
 
   componentDidMount () {
@@ -32,7 +30,6 @@ class TopBar extends React.Component {
     const searchWord = params.searchword
     if (searchWord !== undefined) {
       this.setState({
-        search: searchWord,
         isSearching: true
       })
     }
@@ -48,11 +45,10 @@ class TopBar extends React.Component {
   handleSearchClearButton (e) {
     const { router } = this.context
     this.setState({
-      search: '',
       isSearching: false
     })
     this.refs.search.childNodes[0].blur
-    router.push('/searched')
+    locateSearch('', this.props.location, router)
     e.preventDefault()
   }
 
@@ -106,10 +102,7 @@ class TopBar extends React.Component {
         isConfirmTranslation: true
       })
       const keyword = this.refs.searchInput.value
-      router.push(`/searched/${encodeURIComponent(keyword)}`)
-      this.setState({
-        search: keyword
-      })
+      locateSearch(keyword, this.props.location, router)
     }
   }
 
@@ -117,14 +110,10 @@ class TopBar extends React.Component {
     const { router } = this.context
     const keyword = this.refs.searchInput.value
     if (this.state.isAlphabet || this.state.isConfirmTranslation) {
-      router.push(`/searched/${encodeURIComponent(keyword)}`)
+      locateSearch(keyword, this.props.location, router)
     } else {
       e.preventDefault()
     }
-    this.setState({
-      search: keyword
-    })
-    ee.emit('top:search', keyword)
   }
 
   handleSearchFocus (e) {
@@ -132,6 +121,7 @@ class TopBar extends React.Component {
       isSearching: true
     })
   }
+
   handleSearchBlur (e) {
     e.stopPropagation()
 
@@ -160,12 +150,12 @@ class TopBar extends React.Component {
     }
   }
 
-  handleCodeInit () {
-    ee.emit('top:search', this.refs.searchInput.value)
-  }
-
   render () {
     const { config, style, location } = this.props
+    const keyword = typeof location.query.search !== 'undefined' ? decodeURIComponent(location.query.search) : ''
+
+    ee.emit('top:search', keyword)
+
     return (
       <div className='TopBar'
         styleName={config.isSideNavFolded ? 'root--expanded' : 'root'}
@@ -181,7 +171,7 @@ class TopBar extends React.Component {
             >
               <input
                 ref='searchInput'
-                value={this.state.search}
+                value={keyword}
                 onChange={(e) => this.handleSearchChange(e)}
                 onKeyDown={(e) => this.handleKeyDown(e)}
                 onKeyUp={(e) => this.handleKeyUp(e)}
@@ -189,7 +179,7 @@ class TopBar extends React.Component {
                 type='text'
                 className='searchInput'
               />
-              {this.state.search !== '' &&
+              {keyword !== '' &&
                 <button styleName='control-search-input-clear'
                   onClick={(e) => this.handleSearchClearButton(e)}
                 >
