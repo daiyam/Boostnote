@@ -361,7 +361,7 @@ for name, val in admonition_types
     .admonition.{name}
         @extend $admonition
         border-left-color: val[color]
-    
+
     .admonition.{name}>.admonition-title
         @extend $admonition-title
         border-bottom-color: .1rem solid rgba(val[color], 0.2)
@@ -371,6 +371,33 @@ for name, val in admonition_types
         @extend $admonition-icon
         color: val[color]
         content: val[icon]
+
+details
+  margin-bottom 0.5rem
+
+  summary
+    display flex
+    align-items center
+
+    &:focus
+      outline none
+
+    &::-webkit-details-marker
+      display none
+
+    &:after
+      margin-left 0.5rem
+      content "\f06e"
+      font-family FontAwesome
+      font-size 1.125rem
+
+    h1, h2, h3, h4, h5
+      display inline-block
+      margin-bottom 0
+      padding-bottom 0
+
+  &[open] summary:after
+    content "\f070"
 
 themeDarkBackground = darken(#21252B, 10%)
 themeDarkText = #f9f9f9
