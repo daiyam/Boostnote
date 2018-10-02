@@ -1,47 +1,63 @@
 export function findNoteTitle (value) {
   const splitted = value.split('\n')
-  let title = null
-  let isInsideCodeBlock = false
 
   if (splitted[0] === '---') {
-    let line = 0
-    while (++line < splitted.length) {
-      if (splitted[line] === '---') {
-        splitted.splice(0, line + 1)
+    let index = 0
+    while (++index < splitted.length) {
+      if (splitted[index] === '---') {
+        splitted.splice(0, index + 1)
 
         break
       }
     }
   }
 
-  splitted.some((line, index) => {
-    let trimmedLine = line.trim()
+  let index = -1
+  let isInsideCodeBlock = false
+  let codeBlockIndex
+  let line
+  let match
+  while (++index < splitted.length) {
+    line = splitted[index].trim()
 
-    let match
-    if (/$```/.test(trimmedLine)) {
-      isInsideCodeBlock = !isInsideCodeBlock
-    } else if ((match = /^\??>[> ]*\s*(.*)$/.exec(trimmedLine))) {
-      trimmedLine = match[1]
-    }
+    if (/^```/.test(line)) {
+      if (isInsideCodeBlock) {
+        isInsideCodeBlock = false
 
-    const trimmedNextLine = splitted[index + 1] === undefined ? '' : splitted[index + 1].trim()
-    if (!isInsideCodeBlock && ((match = /^#+ +(.*)/.exec(trimmedLine)) || /^=+$/.test(trimmedNextLine))) {
-      title = match ? match[1] : trimmedLine
-      return true
-    }
-  })
+        const d = index - codeBlockIndex + 1
+        splitted.splice(codeBlockIndex, d)
 
-  if (title === null) {
-    title = ''
-    splitted.some((line) => {
-      if (line.trim().length > 0) {
-        title = line.trim()
-        return true
+        index -= d
+      } else {
+        isInsideCodeBlock = true
+
+        codeBlockIndex = index
       }
-    })
+
+      continue
+    } else if (isInsideCodeBlock) {
+      continue
+    } else if ((match = /^\??>[> ]*\s*(.*)$/.exec(line))) {
+      line = match[1]
+    }
+
+    if ((match = /^#+ +(.*)/.exec(line))) {
+      return match[1]
+    } else if (index + 1 < splitted.length && /^=+$/.test(splitted[index + 1].trim())) {
+      return line
+    }
+
+    splitted[index] = line
   }
 
-  return title
+  index = -1
+  while (++index < splitted.length) {
+    if (splitted[index].length > 0) {
+      return splitted[index]
+    }
+  }
+
+  return null
 }
 
 export default {
