@@ -15,13 +15,18 @@ export function findNoteTitle (value) {
   }
 
   splitted.some((line, index) => {
-    const trimmedLine = line.trim()
-    const trimmedNextLine = splitted[index + 1] === undefined ? '' : splitted[index + 1].trim()
-    if (trimmedLine.match('```')) {
+    let trimmedLine = line.trim()
+
+    let match
+    if (/$```/.test(trimmedLine)) {
       isInsideCodeBlock = !isInsideCodeBlock
+    } else if ((match = /^\??>[> ]*\s*(.*)$/.exec(trimmedLine))) {
+      trimmedLine = match[1]
     }
-    if (isInsideCodeBlock === false && (trimmedLine.match(/^# +/) || trimmedNextLine.match(/^=+$/))) {
-      title = trimmedLine
+
+    const trimmedNextLine = splitted[index + 1] === undefined ? '' : splitted[index + 1].trim()
+    if (!isInsideCodeBlock && ((match = /^#+ +(.*)/.exec(trimmedLine)) || /^=+$/.test(trimmedNextLine))) {
+      title = match ? match[1] : trimmedLine
       return true
     }
   })
