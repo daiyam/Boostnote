@@ -49,7 +49,8 @@ function buildStyle (
   scrollPastEnd,
   theme,
   allowCustomCSS,
-  customCSS
+  customCSS,
+  automaticCollapsibleCodeBlockMaxLines
 ) {
   return `
 @font-face {
@@ -97,26 +98,6 @@ code {
   font-family: '${codeBlockFontFamily.join("','")}';
 }
 
-.clipboardButton {
-  color: rgba(147,147,149,0.8);;
-  fill: rgba(147,147,149,1);;
-  border-radius: 50%;
-  margin: 0px 10px;
-  border: none;
-  background-color: transparent;
-  outline: none;
-  height: 15px;
-  width: 15px;
-  cursor: pointer;
-}
-
-.clipboardButton:hover {
-  transition: 0.2s;
-  color: #939395;
-  fill: #939395;
-  background-color: rgba(0,0,0,0.1);
-}
-
 h1, h2 {
   border: none;
 }
@@ -140,9 +121,22 @@ body p {
     color: #000;
     background-color: #fff;
   }
-  .clipboardButton {
-    display: none
-  }
+}
+
+pre.code.CodeMirror.code-collapsed {
+  max-height: ${automaticCollapsibleCodeBlockMaxLines + 1}rem;
+}
+
+pre.code.CodeMirror.code-collapsed .toolbar {
+  height: ${automaticCollapsibleCodeBlockMaxLines + 1}rem;
+}
+
+pre.code.CodeMirror.code-collapsed.code-filenamed {
+  max-height: ${automaticCollapsibleCodeBlockMaxLines + 2}rem;
+}
+
+pre.code.CodeMirror.code-collapsed.code-filenamed .toolbar {
+  height: ${automaticCollapsibleCodeBlockMaxLines + 2}rem;
 }
 `
 }
@@ -541,7 +535,10 @@ export default class MarkdownPreview extends React.Component {
       prevProps.theme !== this.props.theme ||
       prevProps.scrollPastEnd !== this.props.scrollPastEnd ||
       prevProps.allowCustomCSS !== this.props.allowCustomCSS ||
-      prevProps.customCSS !== this.props.customCSS
+      prevProps.customCSS !== this.props.customCSS ||
+      prevProps.automaticCollapsibleBlocks !== this.props.automaticCollapsibleBlocks ||
+      prevProps.automaticCollapsibleCodeBlockMaxLines !== this.props.automaticCollapsibleCodeBlockMaxLines ||
+      prevProps.automaticCollapsibleTitleLevels !== this.props.automaticCollapsibleTitleLevels
     ) {
       this.applyStyle()
       this.rewriteIframe()
@@ -556,7 +553,8 @@ export default class MarkdownPreview extends React.Component {
       scrollPastEnd,
       theme,
       allowCustomCSS,
-      customCSS
+      customCSS,
+      automaticCollapsibleCodeBlockMaxLines
     } = this.props
     let { fontFamily, codeBlockFontFamily } = this.props
     fontFamily = _.isString(fontFamily) && fontFamily.trim().length > 0
@@ -582,7 +580,8 @@ export default class MarkdownPreview extends React.Component {
       scrollPastEnd,
       theme,
       allowCustomCSS,
-      customCSS
+      customCSS,
+      automaticCollapsibleCodeBlockMaxLines: parseInt(automaticCollapsibleCodeBlockMaxLines, 10) || 5
     }
   }
 
@@ -596,7 +595,8 @@ export default class MarkdownPreview extends React.Component {
       scrollPastEnd,
       theme,
       allowCustomCSS,
-      customCSS
+      customCSS,
+      automaticCollapsibleCodeBlockMaxLines
     } = this.getStyleParams()
 
     this.getWindow().document.getElementById(
@@ -610,7 +610,8 @@ export default class MarkdownPreview extends React.Component {
       scrollPastEnd,
       theme,
       allowCustomCSS,
-      customCSS
+      customCSS,
+      automaticCollapsibleCodeBlockMaxLines
     )
   }
 
@@ -685,10 +686,12 @@ export default class MarkdownPreview extends React.Component {
         if (syntax == null) syntax = CodeMirror.findModeByName('Plain Text')
         CodeMirror.requireMode(syntax.mode, () => {
           const content = htmlTextHelper.decodeEntities(el.innerHTML)
-          const copyIcon = document.createElement('i')
-          copyIcon.innerHTML =
-            '<button class="clipboardButton"><svg width="13" height="13" viewBox="0 0 1792 1792" ><path d="M768 1664h896v-640h-416q-40 0-68-28t-28-68v-416h-384v1152zm256-1440v-64q0-13-9.5-22.5t-22.5-9.5h-704q-13 0-22.5 9.5t-9.5 22.5v64q0 13 9.5 22.5t22.5 9.5h704q13 0 22.5-9.5t9.5-22.5zm256 672h299l-299-299v299zm512 128v672q0 40-28 68t-68 28h-960q-40 0-68-28t-28-68v-160h-544q-40 0-68-28t-28-68v-1344q0-40 28-68t68-28h1088q40 0 68 28t28 68v328q21 13 36 28l408 408q28 28 48 76t20 88z"/></svg></button>'
-          copyIcon.onclick = e => {
+          el.innerHTML = ''
+
+          const parent = el.parentNode
+
+          let button = parent.querySelector('.btn-clipboard')
+          button.onclick = e => {
             copy(content)
             if (showCopyNotification) {
               this.notify('Saved to Clipboard!', {
@@ -697,14 +700,37 @@ export default class MarkdownPreview extends React.Component {
               })
             }
           }
-          el.parentNode.appendChild(copyIcon)
-          el.innerHTML = ''
+
+          if (parent.querySelector('.filename').innerText.length > 0) {
+            parent.classList.add('code-filenamed')
+          }
+
+          const maxLines = parseInt(this.props.automaticCollapsibleCodeBlockMaxLines, 10) || 5
+          if ((this.props.automaticCollapsibleBlocks === 'ONLY_CODE_BLOCK' || this.props.automaticCollapsibleBlocks === 'TITLES_CODE_BLOCKS') && parent.querySelector('.CodeMirror-gutters').childNodes.length > maxLines) {
+            parent.classList.add('code-collapsed')
+
+            if ((button = parent.querySelector('.btn-expand'))) {
+              button.onclick = e => {
+                parent.classList.remove('code-collapsed')
+                parent.classList.add('code-expanded')
+              }
+            }
+
+            if ((button = parent.querySelector('.btn-collapse'))) {
+              button.onclick = e => {
+                parent.classList.remove('code-expanded')
+                parent.classList.add('code-collapsed')
+              }
+            }
+          }
+
           if (codeBlockTheme.indexOf('solarized') === 0) {
             const [refThema, color] = codeBlockTheme.split(' ')
             el.parentNode.className += ` cm-s-${refThema} cm-s-${color}`
           } else {
             el.parentNode.className += ` cm-s-${codeBlockTheme}`
           }
+
           CodeMirror.runMode(content, syntax.mime, el, {
             tabSize: indentSize
           })

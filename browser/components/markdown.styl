@@ -223,6 +223,60 @@ pre
     &>code
       flex 1
       overflow-x auto
+    .toolbar
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin-right: 0.55rem;
+
+      @media print
+        display none
+
+      icon[class^="btn-"]:after
+        font-family FontAwesome
+        font-size 0.82rem
+        color: rgba(147,147,149,0.8);
+        cursor: pointer;
+
+      icon[class^="btn-"]:hover:after
+        transition: 0.2s;
+        color: #939395;
+
+      .btn-clipboard:after
+        content "\f0ea"
+
+      .btn-expand:after
+        content "\f065"
+
+      .btn-collapse:after
+        content "\f066"
+
+      .btn-expand, .btn-collapse
+        display: none
+
+  &.code-collapsed
+    /* max-height: 6rem; */
+    overflow: auto;
+
+    .toolbar
+      position: fixed;
+      right: 2rem;
+      /* height: 6rem; */
+      margin 0
+
+      .btn-expand
+        display block
+
+      .btn-collapse
+        display none
+
+  &.code-expanded
+    .toolbar
+      margin-top: -1.2rem;
+
+      .btn-collapse
+        display block
+
   code
     background-color inherit
     margin 0
@@ -361,7 +415,7 @@ for name, val in admonition_types
     .admonition.{name}
         @extend $admonition
         border-left-color: val[color]
-    
+
     .admonition.{name}>.admonition-title
         @extend $admonition-title
         border-bottom-color: .1rem solid rgba(val[color], 0.2)

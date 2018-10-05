@@ -65,7 +65,10 @@ export const DEFAULT_CONFIG = {
     smartArrows: false,
     allowCustomCSS: false,
     customCSS: '',
-    sanitize: 'STRICT' // 'STRICT', 'ALLOW_STYLES', 'NONE'
+    sanitize: 'STRICT', // 'STRICT', 'ALLOW_STYLES', 'NONE'
+    automaticCollapsibleBlocks: 'NONE', // 'NONE', ONLY_CODE_BLOCK', 'ONLY_TITLES', 'TITLES_CODE_BLOCKS'
+    automaticCollapsibleCodeBlockMaxLines: 5,
+    automaticCollapsibleTitleLevels: '1-2'
   },
   blog: {
     type: 'wordpress', // Available value: wordpress, add more types in the future plz

@@ -51,7 +51,9 @@ class Markdown {
           createGutter(str, firstLineNumber) +
           '<code class="' + langType + '">' +
           str +
-          '</code></pre>'
+          '</code>' +
+          '<div class="toolbar"><icon class="btn-clipboard"></icon><icon class="btn-expand"></icon><icon class="btn-collapse"></icon></div>' +
+          '</pre>'
       },
       sanitize: 'STRICT'
     }
