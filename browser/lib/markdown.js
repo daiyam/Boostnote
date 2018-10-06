@@ -150,9 +150,14 @@ class Markdown {
       }
     })
     this.md.use(require('markdown-it-kbd'))
-
     this.md.use(require('markdown-it-admonition'), {types: ['note', 'hint', 'attention', 'caution', 'danger', 'error']})
     this.md.use(require('./markdown-it-frontmatter'))
+
+    if (config.preview.automaticCollapsibleBlocks === 'ONLY_HEADINGS' || config.preview.automaticCollapsibleBlocks === 'HEADINGS_CODE_BLOCKS') {
+      const levels = config.preview.automaticCollapsibleTitleLevels.split(',').map(l => parseInt(l, 10)).filter(l => l >= 1 && l <= 5)
+
+      this.md.use(require('./markdown-it-automatic-collapsible-heading')(levels.length === 0 ? [1, 2] : levels))
+    }
 
     const deflate = require('markdown-it-plantuml/lib/deflate')
     this.md.use(require('markdown-it-plantuml'), '', {

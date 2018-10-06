@@ -426,6 +426,34 @@ for name, val in admonition_types
         color: val[color]
         content: val[icon]
 
+details
+  margin-bottom 0.5rem
+
+  > summary
+    display flex
+    align-items center
+    margin-bottom 0.5rem
+
+    &:focus
+      outline none
+
+    &::-webkit-details-marker
+      display none
+
+    &:after
+      margin-left 0.5rem
+      content "\f06e"
+      font-family FontAwesome
+      font-size 1.125rem
+
+    h1, h2, h3, h4, h5
+      display inline-block
+      margin-bottom 0
+      padding-bottom 0
+
+  &[open] > summary:after
+    content "\f070"
+
 themeDarkBackground = darken(#21252B, 10%)
 themeDarkText = #f9f9f9
 themeDarkBorder = lighten(themeDarkBackground, 20%)

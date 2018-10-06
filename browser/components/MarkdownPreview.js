@@ -515,15 +515,17 @@ export default class MarkdownPreview extends React.Component {
   }
 
   componentDidUpdate (prevProps) {
-    if (prevProps.value !== this.props.value) this.rewriteIframe()
+    let rewriteIframe = prevProps.value !== this.props.value
     if (
       prevProps.smartQuotes !== this.props.smartQuotes ||
       prevProps.sanitize !== this.props.sanitize ||
       prevProps.smartArrows !== this.props.smartArrows ||
-      prevProps.breaks !== this.props.breaks
+      prevProps.breaks !== this.props.breaks ||
+      prevProps.automaticCollapsibleBlocks !== this.props.automaticCollapsibleBlocks ||
+      prevProps.automaticCollapsibleTitleLevels !== this.props.automaticCollapsibleTitleLevels
     ) {
       this.initMarkdown()
-      this.rewriteIframe()
+      rewriteIframe = true
     }
     if (
       prevProps.fontFamily !== this.props.fontFamily ||
@@ -536,11 +538,13 @@ export default class MarkdownPreview extends React.Component {
       prevProps.scrollPastEnd !== this.props.scrollPastEnd ||
       prevProps.allowCustomCSS !== this.props.allowCustomCSS ||
       prevProps.customCSS !== this.props.customCSS ||
-      prevProps.automaticCollapsibleBlocks !== this.props.automaticCollapsibleBlocks ||
-      prevProps.automaticCollapsibleCodeBlockMaxLines !== this.props.automaticCollapsibleCodeBlockMaxLines ||
-      prevProps.automaticCollapsibleTitleLevels !== this.props.automaticCollapsibleTitleLevels
+      prevProps.automaticCollapsibleCodeBlockMaxLines !== this.props.automaticCollapsibleCodeBlockMaxLines
     ) {
       this.applyStyle()
+      rewriteIframe = true
+    }
+
+    if (rewriteIframe) {
       this.rewriteIframe()
     }
   }
@@ -706,7 +710,7 @@ export default class MarkdownPreview extends React.Component {
           }
 
           const maxLines = parseInt(this.props.automaticCollapsibleCodeBlockMaxLines, 10) || 5
-          if ((this.props.automaticCollapsibleBlocks === 'ONLY_CODE_BLOCK' || this.props.automaticCollapsibleBlocks === 'TITLES_CODE_BLOCKS') && parent.querySelector('.CodeMirror-gutters').childNodes.length > maxLines) {
+          if ((this.props.automaticCollapsibleBlocks === 'ONLY_CODE_BLOCK' || this.props.automaticCollapsibleBlocks === 'HEADINGS_CODE_BLOCKS') && parent.querySelector('.CodeMirror-gutters').childNodes.length > maxLines) {
             parent.classList.add('code-collapsed')
 
             if ((button = parent.querySelector('.btn-expand'))) {

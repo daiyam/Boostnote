@@ -578,8 +578,8 @@ class UiTab extends React.Component {
               >
                 <option value='NONE'>{i18n.__('None')}</option>
                 <option value='ONLY_CODE_BLOCK'>{i18n.__('Only Code Blocks')}</option>
-                <option value='ONLY_TITLES'>{i18n.__('Only Titles')}</option>
-                <option value='TITLES_CODE_BLOCKS'>{i18n.__('Titles & Code Blocks')}</option>
+                <option value='ONLY_HEADINGS'>{i18n.__('Only Headings')}</option>
+                <option value='HEADINGS_CODE_BLOCKS'>{i18n.__('Headings & Code Blocks')}</option>
               </select>
             </div>
           </div>
