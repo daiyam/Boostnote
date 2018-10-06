@@ -1,6 +1,6 @@
 import { isSpace } from 'markdown-it/lib/common/utils'
 
-function getHeading(state, startLine, endLine) {
+function getHeading (state, startLine, endLine) {
   if (state.sCount[startLine] - state.blkIndent >= 4) {
     return false
   }
@@ -8,13 +8,12 @@ function getHeading(state, startLine, endLine) {
   const pos = state.bMarks[startLine] + state.tShift[startLine]
   if (state.src.charCodeAt(pos) === 0x23 && pos < state.eMarks[startLine]) {
     return getATXHeading(state, startLine, endLine)
-  }
-  else {
+  } else {
     return getSetextHeading(state, startLine, endLine)
   }
 }
 
-function getATXHeading(state, startLine, endLine) {
+function getATXHeading (state, startLine, endLine) {
   let pos = state.bMarks[startLine] + state.tShift[startLine]
   let max = state.eMarks[startLine]
   let level = 1
@@ -39,11 +38,11 @@ function getATXHeading(state, startLine, endLine) {
     level,
     content: state.src.slice(pos, max).trim(),
     endLine: startLine,
-    markup: '########'.slice(0, level),
+    markup: '########'.slice(0, level)
   }
 }
 
-function getSetextHeading(state, startLine, endLine) {
+function getSetextHeading (state, startLine, endLine) {
   const terminatorRules = state.md.block.ruler.getRules('paragraph')
   let nextLine = startLine + 1
   let level
@@ -51,7 +50,7 @@ function getSetextHeading(state, startLine, endLine) {
   let terminate
 
   // jump line-by-line until empty one or EOF
-  while(nextLine < endLine && !state.isEmpty(nextLine)) {
+  while (nextLine < endLine && !state.isEmpty(nextLine)) {
     // this would be a code block normally, but after paragraph
     // it's considered a lazy continuation regardless of what's there
     if (state.sCount[nextLine] - state.blkIndent > 3) {
@@ -107,8 +106,6 @@ function getSetextHeading(state, startLine, endLine) {
     return false
   }
 
-  const content = state.getLines(startLine, nextLine, state.blkIndent, false).trim()
-
   return {
     level,
     content: state.getLines(startLine, nextLine, state.blkIndent, false).trim(),
@@ -117,10 +114,9 @@ function getSetextHeading(state, startLine, endLine) {
   }
 }
 
-module.exports = function(levels) {
+module.exports = function (levels) {
   return function automaticCollapsibleHeadingPlugin (md) {
     function parse (state, startLine, endLine, silent) {
-
       if (silent) {
         return false
       }
@@ -128,7 +124,7 @@ module.exports = function(levels) {
       const oldParentType = state.parentType
       state.parentType = 'paragraph'
 
-      const heading  = getHeading(state, startLine, endLine)
+      const heading = getHeading(state, startLine, endLine)
 
       if (!heading || levels.indexOf(heading.level) === -1) {
         state.parentType = oldParentType
@@ -142,8 +138,7 @@ module.exports = function(levels) {
         if ((nextHeading = getHeading(state, line, endLine))) {
           if (nextHeading.level === heading.level) {
             break
-          }
-          else {
+          } else {
             line = nextHeading.endLine
           }
         }
@@ -159,17 +154,17 @@ module.exports = function(levels) {
       token = state.push('collapsible_block_summary_open', 'summary', 1)
       token.map = [startLine, heading.endLine]
 
-      token          = state.push('heading_open', 'h' + String(heading.level), 1)
-      token.markup   = heading.markup
-      token.map      = [ startLine, heading.endLine ]
+      token = state.push('heading_open', 'h' + String(heading.level), 1)
+      token.markup = heading.markup
+      token.map = [ startLine, heading.endLine ]
 
-      token          = state.push('inline', '', 0)
-      token.content  = heading.content
-      token.map      = [ startLine, heading.endLine + 1 ]
+      token = state.push('inline', '', 0)
+      token.content = heading.content
+      token.map = [ startLine, heading.endLine + 1 ]
       token.children = []
 
-      token          = state.push('heading_close', 'h' + String(heading.level), -1)
-      token.markup   = heading.markup
+      token = state.push('heading_close', 'h' + String(heading.level), -1)
+      token.markup = heading.markup
 
       token = state.push('collapsible_block_summary_close', 'summary', -1)
 
