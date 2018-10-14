@@ -236,8 +236,9 @@ pre
         display none
 
       icon[class^="btn-"]:after
-        font-family FontAwesome
-        font-size 0.82rem
+        font normal normal normal 0.82rem/1 FontAwesome
+        text-rendering auto
+        -webkit-font-smoothing antialiased
         color: rgba(147,147,149,0.8);
         cursor: pointer;
 
@@ -444,10 +445,11 @@ details
       display none
 
     &:after
+      font normal normal normal 1.125rem/1 FontAwesome
+      text-rendering auto
+      -webkit-font-smoothing antialiased
       margin-left 0.5rem
       content "\f06e"
-      font-family FontAwesome
-      font-size 1.125rem
 
     h1, h2, h3, h4, h5
       display inline-block
