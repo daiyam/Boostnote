@@ -90,6 +90,9 @@ class NoteList extends React.Component {
     }
 
     this.contextNotes = []
+    this.notes = []
+
+    this.noteComponent = NoteItem
   }
 
   componentDidMount () {
@@ -107,6 +110,49 @@ class NoteList extends React.Component {
     if (nextProps.location.pathname !== this.props.location.pathname) {
       this.resetScroll()
     }
+
+    const { location, config, params: { folderKey } } = nextProps
+    const sortBy = _.get(config, [folderKey, 'sortBy'], config.sortBy.default)
+    const sortFunc = sortBy === 'CREATED_AT'
+      ? sortByCreatedAt
+      : sortBy === 'ALPHABETICAL'
+      ? sortByAlphabetical
+      : sortByUpdatedAt
+
+    let notes = this.getNotes(nextProps)
+
+    if (location.pathname === '/trashed') {
+      notes = notes.filter(note => note.isTrashed)
+    } else {
+      notes = notes.filter(note => !note.isTrashed)
+    }
+
+    if (typeof location.query.search !== 'undefined' && location.query.search !== '') {
+      const search = decodeURIComponent(location.query.search)
+
+      notes = searchFromNotes(notes, search)
+    }
+
+    if (location.pathname.match(/\/starred|\/trash/)) {
+      notes = notes.sort(sortFunc)
+    } else {
+      notes = this.sortByPin(notes.sort(sortFunc))
+    }
+
+    this.notes = notes
+
+    const { selectedNoteKeys } = this.state
+    if (notes.length > 0 && (selectedNoteKeys.length === 0 || notes.every(note => !selectedNoteKeys.includes(note.key)))) {
+      const key = getNoteKey(notes[0])
+
+      this.setState({
+        selectedNoteKeys: [key]
+      })
+
+      locateNote(key, location, this.context.router)
+    }
+
+    this.noteComponent = config.listStyle === 'DEFAULT' ? NoteItem : NoteItemSimple
   }
 
   resetScroll () {
@@ -135,7 +181,7 @@ class NoteList extends React.Component {
     if (note && location.query.key == null) {
       const { router } = this.context
       if (typeof location.query.search === 'undefined' || location.query.search === '') {
-        this.contextNotes = this.getContextNotes()
+        this.contextNotes = this.getContextNotes(this.props)
       }
 
       // A visible note is an active note
@@ -315,8 +361,8 @@ class NoteList extends React.Component {
     }
   }
 
-  getNotes () {
-    const { data, params, location } = this.props
+  getNotes (props) {
+    const { data, params, location } = props
 
     if (location.pathname.match(/\/home/) || location.pathname.match(/alltags/)) {
       const allNotes = data.noteMap.map((note) => note)
@@ -343,12 +389,11 @@ class NoteList extends React.Component {
       }).filter(note => listOfTags.every(tag => note.tags.includes(tag)))
     }
 
-    return this.getContextNotes()
+    return this.getContextNotes(props)
   }
 
   // get notes in the current folder
-  getContextNotes () {
-    const { data, params } = this.props
+  getContextNotes ({ data, params }) {
     const storageKey = params.storageKey
     const folderKey = params.folderKey
     const storage = data.storageMap.get(storageKey)
@@ -902,34 +947,8 @@ class NoteList extends React.Component {
   render () {
     const { location, config, params: { folderKey } } = this.props
     const { selectedNoteKeys } = this.state
+    const NoteComponent = this.noteComponent
     const sortBy = _.get(config, [folderKey, 'sortBy'], config.sortBy.default)
-    const sortFunc = sortBy === 'CREATED_AT'
-      ? sortByCreatedAt
-      : sortBy === 'ALPHABETICAL'
-      ? sortByAlphabetical
-      : sortByUpdatedAt
-
-    let notes = this.getNotes()
-
-    if (location.pathname === '/trashed') {
-      notes = notes.filter(note => note.isTrashed)
-    } else {
-      notes = notes.filter(note => !note.isTrashed)
-    }
-
-    if (typeof location.query.search !== 'undefined' && location.query.search !== '') {
-      const search = decodeURIComponent(location.query.search)
-
-      notes = searchFromNotes(notes, search)
-    }
-
-    if (location.pathname.match(/\/starred|\/trash/)) {
-      notes = notes.sort(sortFunc)
-    } else {
-      notes = this.sortByPin(notes.sort(sortFunc))
-    }
-
-    this.notes = notes
 
     moment.updateLocale('en', {
       relativeTime: {
@@ -952,51 +971,21 @@ class NoteList extends React.Component {
 
     const viewType = this.getViewType()
 
-    const autoSelectFirst =
-      notes.length === 1 ||
-      selectedNoteKeys.length === 0 ||
-      notes.every(note => !selectedNoteKeys.includes(note.key))
-
-    const noteList = notes
+    const noteList = this.notes
       .map((note, index) => {
         if (note == null) {
           return null
         }
 
-        const isDefault = config.listStyle === 'DEFAULT'
         const uniqueKey = getNoteKey(note)
-
-        const isActive =
-          selectedNoteKeys.includes(uniqueKey) ||
-          notes.length === 1 ||
-          (autoSelectFirst && index === 0)
-        const dateDisplay = moment(
-          sortBy === 'CREATED_AT'
-            ? note.createdAt : note.updatedAt
-        ).fromNow('D')
-
-        if (isDefault) {
-          return (
-            <NoteItem
-              isActive={isActive}
-              note={note}
-              dateDisplay={dateDisplay}
-              key={uniqueKey}
-              handleNoteContextMenu={this.handleNoteContextMenu.bind(this)}
-              handleNoteClick={this.handleNoteClick.bind(this)}
-              handleDragStart={this.handleDragStart.bind(this)}
-              pathname={location.pathname}
-              folderName={this.getNoteFolder(note).name}
-              storageName={this.getNoteStorage(note).name}
-              viewType={viewType}
-            />
-          )
-        }
+        const isActive = selectedNoteKeys.includes(uniqueKey)
+        const dateDisplay = moment(sortBy === 'CREATED_AT' ? note.createdAt : note.updatedAt).fromNow('D')
 
         return (
-          <NoteItemSimple
+          <NoteComponent
             isActive={isActive}
             note={note}
+            dateDisplay={dateDisplay}
             key={uniqueKey}
             handleNoteContextMenu={this.handleNoteContextMenu.bind(this)}
             handleNoteClick={this.handleNoteClick.bind(this)}
