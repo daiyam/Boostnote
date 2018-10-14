@@ -80,6 +80,9 @@ li
     &.checked
       text-decoration line-through
       opacity 0.5
+  &.taskListItem.checked
+    text-decoration line-through
+    opacity 0.5
 div.math-rendered
   text-align center
 .math-failed
@@ -558,5 +561,34 @@ body[data-theme="monokai"]
         border-color themeMonokaiTableBorder
         &:last-child
           border-right solid 1px themeMonokaiTableBorder
+  kbd
+    background-color themeDarkBackground
+
+themeDraculaTableOdd = $ui-dracula-noteDetail-backgroundColor
+themeDraculaTableEven = darken($ui-dracula-noteDetail-backgroundColor, 10%)
+themeDraculaTableHead = themeDraculaTableEven
+themeDraculaTableBorder = themeDarkBorder
+
+body[data-theme="dracula"]
+  color $ui-dracula-text-color
+  border-color themeDarkBorder
+  background-color $ui-dracula-noteDetail-backgroundColor
+  table
+    thead
+      tr
+        background-color themeDraculaTableHead
+      th
+        border-color themeDraculaTableBorder
+        &:last-child
+          border-right solid 1px themeDraculaTableBorder
+    tbody
+      tr:nth-child(2n + 1)
+        background-color themeDraculaTableOdd
+      tr:nth-child(2n)
+        background-color themeDraculaTableEven
+      td
+        border-color themeDraculaTableBorder
+        &:last-child
+          border-right solid 1px themeDraculaTableBorder
   kbd
     background-color themeDarkBackground

@@ -419,6 +419,7 @@ export default class MarkdownPreview extends React.Component {
       case 'dark':
       case 'solarized-dark':
       case 'monokai':
+      case 'dracula':
         return scrollBarDarkStyle
       default:
         return scrollBarStyle
@@ -477,6 +478,10 @@ export default class MarkdownPreview extends React.Component {
     eventEmitter.on('export:save-md', this.saveAsMdHandler)
     eventEmitter.on('export:save-html', this.saveAsHtmlHandler)
     eventEmitter.on('print', this.printHandler)
+    eventEmitter.on('config-renew', () => {
+      this.markdown.updateConfig()
+      this.rewriteIframe()
+    })
   }
 
   componentWillUnmount () {

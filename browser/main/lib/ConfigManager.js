@@ -68,7 +68,8 @@ export const DEFAULT_CONFIG = {
     sanitize: 'STRICT', // 'STRICT', 'ALLOW_STYLES', 'NONE'
     automaticCollapsibleBlocks: 'NONE', // 'NONE', ONLY_CODE_BLOCK', 'ONLY_HEADINGS', 'HEADINGS_CODE_BLOCKS'
     automaticCollapsibleCodeBlockMaxLines: 5,
-    automaticCollapsibleTitleLevels: '1,2'
+    automaticCollapsibleTitleLevels: '1,2',
+    lineThroughCheckbox: true
   },
   blog: {
     type: 'wordpress', // Available value: wordpress, add more types in the future plz
@@ -150,6 +151,8 @@ function set (updates) {
     document.body.setAttribute('data-theme', 'solarized-dark')
   } else if (newConfig.ui.theme === 'monokai') {
     document.body.setAttribute('data-theme', 'monokai')
+  } else if (newConfig.ui.theme === 'dracula') {
+    document.body.setAttribute('data-theme', 'dracula')
   } else {
     document.body.setAttribute('data-theme', 'default')
   }

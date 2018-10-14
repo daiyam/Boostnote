@@ -107,10 +107,11 @@ class UiTab extends React.Component {
         smartArrows: this.refs.previewSmartArrows.checked,
         sanitize: this.refs.previewSanitize.value,
         allowCustomCSS: this.refs.previewAllowCustomCSS.checked,
-        customCSS: this.customCSSCM.getCodeMirror().getValue(),
         automaticCollapsibleBlocks: this.refs.automaticCollapsibleBlocks.value,
         automaticCollapsibleCodeBlockMaxLines: this.refs.automaticCollapsibleCodeBlockMaxLines.value,
-        automaticCollapsibleTitleLevels: this.refs.automaticCollapsibleTitleLevels.value
+        automaticCollapsibleTitleLevels: this.refs.automaticCollapsibleTitleLevels.value,
+        lineThroughCheckbox: this.refs.lineThroughCheckbox.checked,
+        customCSS: this.customCSSCM.getCodeMirror().getValue()
       }
     }
 
@@ -190,6 +191,7 @@ class UiTab extends React.Component {
                 <option value='white'>{i18n.__('White')}</option>
                 <option value='solarized-dark'>{i18n.__('Solarized Dark')}</option>
                 <option value='monokai'>{i18n.__('Monokai')}</option>
+                <option value='dracula'>{i18n.__('Dracula')}</option>
                 <option value='dark'>{i18n.__('Dark')}</option>
               </select>
             </div>
@@ -514,6 +516,16 @@ class UiTab extends React.Component {
                 }
               </select>
             </div>
+          </div>
+          <div styleName='group-checkBoxSection'>
+            <label>
+              <input onChange={(e) => this.handleUIChange(e)}
+                checked={this.state.config.preview.lineThroughCheckbox}
+                ref='lineThroughCheckbox'
+                type='checkbox'
+              />&nbsp;
+              {i18n.__('Allow line through checkbox')}
+            </label>
           </div>
           <div styleName='group-checkBoxSection'>
             <label>
