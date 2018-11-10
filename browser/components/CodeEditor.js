@@ -198,7 +198,18 @@ export default class CodeEditor extends React.Component {
           document.execCommand('copy')
         }
         return CodeMirror.Pass
-      }
+      },
+      'Cmd-E C': 'foldAll',
+      'Cmd-E X': 'unfoldAll',
+      'Cmd-E 1': 'foldLevel1',
+      'Cmd-E 2': 'foldLevel2',
+      'Cmd-E 3': 'foldLevel3',
+      'Cmd-E 4': 'foldLevel4',
+      'Cmd-E 5': 'foldLevel5',
+      'Cmd-E 6': 'foldLevel6',
+      'Cmd-E 7': 'foldLevel7',
+      'Cmd-E 8': 'foldLevel8',
+      'Cmd-E 9': 'foldLevel9'
     })
 
     this.value = this.props.value
