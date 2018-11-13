@@ -25,7 +25,19 @@ export const DEFAULT_CONFIG = {
   hotkey: {
     toggleMain: OSX ? 'Command + Alt + L' : 'Super + Alt + E',
     toggleMode: OSX ? 'Command + Alt + M' : 'Ctrl + M',
-    deleteNote: OSX ? 'Command + Shift + Backspace' : 'Ctrl + Shift + Backspace'
+    deleteNote: OSX ? 'Command + Shift + Backspace' : 'Ctrl + Shift + Backspace',
+    foldAll: OSX ? 'Command + K Command + 0' : 'Ctrl + K Ctrl + 0',
+    unfoldAll: OSX ? 'Command + K Command + J' : 'Ctrl + K Ctrl + J',
+    foldLevel1: OSX ? 'Command + K Command + 1' : 'Ctrl + K Ctrl + 1',
+    foldLevel2: OSX ? 'Command + K Command + 2' : 'Ctrl + K Ctrl + 2',
+    foldLevel3: OSX ? 'Command + K Command + 3' : 'Ctrl + K Ctrl + 3',
+    foldLevel4: OSX ? 'Command + K Command + 4' : 'Ctrl + K Ctrl + 4',
+    foldLevel5: OSX ? 'Command + K Command + 5' : 'Ctrl + K Ctrl + 5',
+    unfoldLevel1: OSX ? 'Command + Shift + K Command + 1' : 'Ctrl + Shift + K Ctrl + 1',
+    unfoldLevel2: OSX ? 'Command + Shift + K Command + 2' : 'Ctrl + Shift + K Ctrl + 2',
+    unfoldLevel3: OSX ? 'Command + Shift + K Command + 3' : 'Ctrl + Shift + K Ctrl + 3',
+    unfoldLevel4: OSX ? 'Command + Shift + K Command + 4' : 'Ctrl + Shift + K Ctrl + 4',
+    unfoldLevel5: OSX ? 'Command + Shift + K Command + 5' : 'Ctrl + Shift + K Ctrl + 5'
   },
   ui: {
     language: 'en',

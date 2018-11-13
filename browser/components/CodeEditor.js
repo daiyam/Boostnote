@@ -22,6 +22,10 @@ CodeMirror.modeURL = '../node_modules/codemirror/mode/%N/%N.js'
 const buildCMRulers = (rulers, enableRulers) =>
   (enableRulers ? rulers.map(ruler => ({ column: ruler })) : [])
 
+function translateHotkey (hotkey) {
+  return hotkey.replace(/\s*\+\s*/g, '-').replace(/Command/g, 'Cmd').replace(/Control/g, 'Ctrl')
+}
+
 export default class CodeEditor extends React.Component {
   constructor (props) {
     super(props)
@@ -111,42 +115,8 @@ export default class CodeEditor extends React.Component {
     }
   }
 
-  updateTableEditorState () {
-    const active = this.tableEditor.cursorIsInTable(this.tableEditorOptions)
-    if (active) {
-      if (this.extraKeysMode !== 'editor') {
-        this.extraKeysMode = 'editor'
-        this.editor.setOption('extraKeys', this.editorKeyMap)
-      }
-    } else {
-      if (this.extraKeysMode !== 'default') {
-        this.extraKeysMode = 'default'
-        this.editor.setOption('extraKeys', this.defaultKeyMap)
-        this.tableEditor.resetSmartCursor()
-      }
-    }
-  }
-
-  componentDidMount () {
-    const { rulers, enableRulers } = this.props
-    const expandSnippet = this.expandSnippet.bind(this)
-    eventEmitter.on('line:jump', this.scrollToLineHandeler)
-
-    const defaultSnippet = [
-      {
-        id: crypto.randomBytes(16).toString('hex'),
-        name: 'Dummy text',
-        prefix: ['lorem', 'ipsum'],
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-      }
-    ]
-    if (!fs.existsSync(consts.SNIPPET_FILE)) {
-      fs.writeFileSync(
-        consts.SNIPPET_FILE,
-        JSON.stringify(defaultSnippet, null, 4),
-        'utf8'
-      )
-    }
+  updateDefaultKeyMap () {
+    const { hotkey } = this.props
 
     this.defaultKeyMap = CodeMirror.normalizeKeyMap({
       Tab: function (cm) {
@@ -199,18 +169,59 @@ export default class CodeEditor extends React.Component {
         }
         return CodeMirror.Pass
       },
-      'Cmd-E C': 'foldAll',
-      'Cmd-E X': 'unfoldAll',
-      'Cmd-E 1': 'foldLevel1',
-      'Cmd-E 2': 'foldLevel2',
-      'Cmd-E 3': 'foldLevel3',
-      'Cmd-E 4': 'foldLevel4',
-      'Cmd-E 5': 'foldLevel5',
-      'Cmd-E 6': 'foldLevel6',
-      'Cmd-E 7': 'foldLevel7',
-      'Cmd-E 8': 'foldLevel8',
-      'Cmd-E 9': 'foldLevel9'
+      [translateHotkey(hotkey.foldAll)]: 'foldAll',
+      [translateHotkey(hotkey.unfoldAll)]: 'unfoldAll',
+      [translateHotkey(hotkey.foldLevel1)]: 'foldLevel1',
+      [translateHotkey(hotkey.foldLevel2)]: 'foldLevel2',
+      [translateHotkey(hotkey.foldLevel3)]: 'foldLevel3',
+      [translateHotkey(hotkey.foldLevel4)]: 'foldLevel4',
+      [translateHotkey(hotkey.foldLevel5)]: 'foldLevel5',
+      [translateHotkey(hotkey.unfoldLevel1)]: 'unfoldLevel1',
+      [translateHotkey(hotkey.unfoldLevel2)]: 'unfoldLevel2',
+      [translateHotkey(hotkey.unfoldLevel3)]: 'unfoldLevel3',
+      [translateHotkey(hotkey.unfoldLevel4)]: 'unfoldLevel4',
+      [translateHotkey(hotkey.unfoldLevel5)]: 'unfoldLevel5'
     })
+  }
+
+  updateTableEditorState () {
+    const active = this.tableEditor.cursorIsInTable(this.tableEditorOptions)
+    if (active) {
+      if (this.extraKeysMode !== 'editor') {
+        this.extraKeysMode = 'editor'
+        this.editor.setOption('extraKeys', this.editorKeyMap)
+      }
+    } else {
+      if (this.extraKeysMode !== 'default') {
+        this.extraKeysMode = 'default'
+        this.editor.setOption('extraKeys', this.defaultKeyMap)
+        this.tableEditor.resetSmartCursor()
+      }
+    }
+  }
+
+  componentDidMount () {
+    const { rulers, enableRulers } = this.props
+    const expandSnippet = this.expandSnippet.bind(this)
+    eventEmitter.on('line:jump', this.scrollToLineHandeler)
+
+    const defaultSnippet = [
+      {
+        id: crypto.randomBytes(16).toString('hex'),
+        name: 'Dummy text',
+        prefix: ['lorem', 'ipsum'],
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+      }
+    ]
+    if (!fs.existsSync(consts.SNIPPET_FILE)) {
+      fs.writeFileSync(
+        consts.SNIPPET_FILE,
+        JSON.stringify(defaultSnippet, null, 4),
+        'utf8'
+      )
+    }
+
+    this.updateDefaultKeyMap()
 
     this.value = this.props.value
     this.editor = CodeMirror(this.refs.root, {
@@ -460,6 +471,14 @@ export default class CodeEditor extends React.Component {
 
       this.extraKeysMode = 'default'
       this.editor.setOption('extraKeys', this.defaultKeyMap)
+    }
+
+    if (prevProps.hotkey !== this.props.hotkey) {
+      this.updateDefaultKeyMap()
+
+      if (this.extraKeysMode === 'default') {
+        this.editor.setOption('extraKeys', this.defaultKeyMap)
+      }
     }
 
     if (this.state.clientWidth !== this.refs.root.clientWidth) {
