@@ -16,7 +16,6 @@ import convertModeName from 'browser/lib/convertModeName'
 import copy from 'copy-to-clipboard'
 import mdurl from 'mdurl'
 import exportNote from 'browser/main/lib/dataApi/exportNote'
-import { escapeHtmlCharacters } from 'browser/lib/utils'
 import yaml from 'js-yaml'
 import context from 'browser/lib/context'
 import i18n from 'browser/lib/i18n'
@@ -528,7 +527,7 @@ export default class MarkdownPreview extends React.Component {
       prevProps.smartArrows !== this.props.smartArrows ||
       prevProps.breaks !== this.props.breaks ||
       prevProps.automaticCollapsibleBlocks !== this.props.automaticCollapsibleBlocks ||
-      prevProps.automaticCollapsibleTitleLevels !== this.props.automaticCollapsibleTitleLevels
+      prevProps.automaticCollapsibleTitleLevels !== this.props.automaticCollapsibleTitleLevels ||
       prevProps.lineThroughCheckbox !== this.props.lineThroughCheckbox
     ) {
       this.initMarkdown()
