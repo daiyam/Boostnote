@@ -20,12 +20,18 @@ class MarkdownSplitEditor extends React.Component {
     }
   }
 
+  setValue (value) {
+    this.refs.code.setValue(value)
+  }
+
   handleOnChange () {
     this.value = this.refs.code.value
     this.props.onChange()
   }
 
   handleScroll (e) {
+    if (!this.props.config.preview.scrollSync) return
+
     const previewDoc = _.get(this, 'refs.preview.refs.root.contentWindow.document')
     const codeDoc = _.get(this, 'refs.code.editor.doc')
     let srcTop, srcHeight, targetTop, targetHeight
@@ -72,8 +78,8 @@ class MarkdownSplitEditor extends React.Component {
     e.preventDefault()
     e.stopPropagation()
     const idMatch = /checkbox-([0-9]+)/
-    const checkedMatch = /\[x\]/i
-    const uncheckedMatch = /\[ \]/
+    const checkedMatch = /^\s*[\+\-\*] \[x\]/i
+    const uncheckedMatch = /^\s*[\+\-\*] \[ \]/
     if (idMatch.test(e.target.getAttribute('id'))) {
       const lineIndex = parseInt(e.target.getAttribute('id').match(idMatch)[1], 10) - 1
       const lines = this.refs.code.value
@@ -82,10 +88,10 @@ class MarkdownSplitEditor extends React.Component {
       const targetLine = lines[lineIndex]
 
       if (targetLine.match(checkedMatch)) {
-        lines[lineIndex] = targetLine.replace(checkedMatch, '[ ]')
+        lines[lineIndex] = targetLine.replace(checkedMatch, '- [ ]')
       }
       if (targetLine.match(uncheckedMatch)) {
-        lines[lineIndex] = targetLine.replace(uncheckedMatch, '[x]')
+        lines[lineIndex] = targetLine.replace(uncheckedMatch, '- [x]')
       }
       this.refs.code.setValue(lines.join('\n'))
     }
@@ -195,6 +201,7 @@ class MarkdownSplitEditor extends React.Component {
           automaticCollapsibleBlocks={config.preview.automaticCollapsibleBlocks}
           automaticCollapsibleCodeBlockMaxLines={config.preview.automaticCollapsibleCodeBlockMaxLines}
           automaticCollapsibleTitleLevels={config.preview.automaticCollapsibleTitleLevels}
+          lineThroughCheckbox={config.preview.lineThroughCheckbox}
        />
       </div>
     )

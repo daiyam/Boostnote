@@ -6,6 +6,7 @@ import CodeEditor from 'browser/components/CodeEditor'
 import MarkdownPreview from 'browser/components/MarkdownPreview'
 import eventEmitter from 'browser/main/lib/eventEmitter'
 import { findStorage } from 'browser/lib/findStorage'
+import ConfigManager from 'browser/main/lib/ConfigManager'
 
 class MarkdownEditor extends React.Component {
   constructor (props) {
@@ -18,7 +19,7 @@ class MarkdownEditor extends React.Component {
     this.supportMdSelectionBold = [16, 17, 186]
 
     this.state = {
-      status: 'PREVIEW',
+      status: props.config.editor.switchPreview === 'RIGHTCLICK' ? props.config.editor.delfaultStatus : 'PREVIEW',
       renderValue: props.value,
       keyPressed: new Set(),
       isLocked: false
@@ -64,6 +65,10 @@ class MarkdownEditor extends React.Component {
     })
   }
 
+  setValue (value) {
+    this.refs.code.setValue(value)
+  }
+
   handleChange (e) {
     this.value = this.refs.code.value
     this.props.onChange(e)
@@ -72,9 +77,7 @@ class MarkdownEditor extends React.Component {
   handleContextMenu (e) {
     const { config } = this.props
     if (config.editor.switchPreview === 'RIGHTCLICK') {
-      const newStatus = this.state.status === 'PREVIEW'
-        ? 'CODE'
-        : 'PREVIEW'
+      const newStatus = this.state.status === 'PREVIEW' ? 'CODE' : 'PREVIEW'
       this.setState({
         status: newStatus
       }, () => {
@@ -84,6 +87,10 @@ class MarkdownEditor extends React.Component {
           this.refs.preview.focus()
         }
         eventEmitter.emit('topbar:togglelockbutton', this.state.status)
+
+        const newConfig = Object.assign({}, config)
+        newConfig.editor.delfaultStatus = newStatus
+        ConfigManager.set(newConfig)
       })
     }
   }
@@ -140,8 +147,8 @@ class MarkdownEditor extends React.Component {
     e.preventDefault()
     e.stopPropagation()
     const idMatch = /checkbox-([0-9]+)/
-    const checkedMatch = /\[x\]/i
-    const uncheckedMatch = /\[ \]/
+    const checkedMatch = /^\s*[\+\-\*] \[x\]/i
+    const uncheckedMatch = /^\s*[\+\-\*] \[ \]/
     if (idMatch.test(e.target.getAttribute('id'))) {
       const lineIndex = parseInt(e.target.getAttribute('id').match(idMatch)[1], 10) - 1
       const lines = this.refs.code.value
@@ -150,10 +157,10 @@ class MarkdownEditor extends React.Component {
       const targetLine = lines[lineIndex]
 
       if (targetLine.match(checkedMatch)) {
-        lines[lineIndex] = targetLine.replace(checkedMatch, '[ ]')
+        lines[lineIndex] = targetLine.replace(checkedMatch, '- [ ]')
       }
       if (targetLine.match(uncheckedMatch)) {
-        lines[lineIndex] = targetLine.replace(uncheckedMatch, '[x]')
+        lines[lineIndex] = targetLine.replace(uncheckedMatch, '- [x]')
       }
       this.refs.code.setValue(lines.join('\n'))
     }
@@ -303,6 +310,7 @@ class MarkdownEditor extends React.Component {
           automaticCollapsibleBlocks={config.preview.automaticCollapsibleBlocks}
           automaticCollapsibleCodeBlockMaxLines={config.preview.automaticCollapsibleCodeBlockMaxLines}
           automaticCollapsibleTitleLevels={config.preview.automaticCollapsibleTitleLevels}
+          lineThroughCheckbox={config.preview.lineThroughCheckbox}
         />
       </div>
     )
