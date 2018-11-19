@@ -174,7 +174,6 @@ class Markdown {
         <span class="filename">${token.fileName}</span>
         ${createGutter(token.content, token.firstLineNumber)}
         <code class="${token.langType}">${token.content}</code>
-        <div class="toolbar"><icon class="btn-clipboard"></icon><icon class="btn-expand"></icon><icon class="btn-collapse"></icon></div>
       </pre>`
     })
 
