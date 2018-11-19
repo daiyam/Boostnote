@@ -50,7 +50,7 @@ popupZIndex= 500
 
 body
   font-size 16px
-  padding 15px
+  padding 1rem 1rem 1rem 1.2rem
   font-family helvetica, arial, sans-serif
   line-height 1.6
   overflow-x hidden
@@ -380,26 +380,18 @@ details
     display flex
     align-items center
     margin-bottom 0.5rem
+    cursor pointer
 
     &:focus
       outline none
 
     &::-webkit-details-marker
-      display none
-
-    &:after
-      margin-left 0.5rem
-      content "\f06e"
-      font-family FontAwesome
-      font-size 1.125rem
+      margin-left: -1rem
 
     h1, h2, h3, h4, h5
       display inline-block
       margin-bottom 0
       padding-bottom 0
-
-  &[open] summary:after
-    content "\f070"
 
 dl
   margin 2rem 0
