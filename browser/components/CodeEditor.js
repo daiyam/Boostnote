@@ -14,6 +14,8 @@ import consts from 'browser/lib/consts'
 import fs from 'fs'
 const { ipcRenderer } = require('electron')
 import normalizeEditorFontFamily from 'browser/lib/normalizeEditorFontFamily'
+import TurndownService from 'turndown'
+import { gfm } from 'turndown-plugin-gfm'
 
 CodeMirror.modeURL = '../node_modules/codemirror/mode/%N/%N.js'
 
@@ -57,9 +59,12 @@ export default class CodeEditor extends React.Component {
     }
     this.searchHandler = (e, msg) => this.handleSearch(msg)
     this.searchState = null
+    this.scrollToLineHandeler = this.scrollToLine.bind(this)
 
     this.formatTable = () => this.handleFormatTable()
     this.editorActivityHandler = () => this.handleEditorActivity()
+
+    this.turndownService = new TurndownService()
   }
 
   handleSearch (msg) {
@@ -125,6 +130,7 @@ export default class CodeEditor extends React.Component {
   componentDidMount () {
     const { rulers, enableRulers } = this.props
     const expandSnippet = this.expandSnippet.bind(this)
+    eventEmitter.on('line:jump', this.scrollToLineHandeler)
 
     const defaultSnippet = [
       {
@@ -311,22 +317,28 @@ export default class CodeEditor extends React.Component {
           const snippetLines = snippets[i].content.split('\n')
           let cursorLineNumber = 0
           let cursorLinePosition = 0
+
+          let cursorIndex
           for (let j = 0; j < snippetLines.length; j++) {
-            const cursorIndex = snippetLines[j].indexOf(templateCursorString)
+            cursorIndex = snippetLines[j].indexOf(templateCursorString)
+
             if (cursorIndex !== -1) {
               cursorLineNumber = j
               cursorLinePosition = cursorIndex
-              cm.replaceRange(
-                snippets[i].content.replace(templateCursorString, ''),
-                wordBeforeCursor.range.from,
-                wordBeforeCursor.range.to
-              )
-              cm.setCursor({
-                line: cursor.line + cursorLineNumber,
-                ch: cursorLinePosition
-              })
+
+              break
             }
           }
+
+          cm.replaceRange(
+            snippets[i].content.replace(templateCursorString, ''),
+            wordBeforeCursor.range.from,
+            wordBeforeCursor.range.to
+          )
+          cm.setCursor({
+            line: cursor.line + cursorLineNumber,
+            ch: cursorLinePosition + cursor.ch - wordBeforeCursor.text.length
+          })
         } else {
           cm.replaceRange(
             snippets[i].content,
@@ -475,7 +487,13 @@ export default class CodeEditor extends React.Component {
 
   moveCursorTo (row, col) {}
 
-  scrollToLine (num) {}
+  scrollToLine (event, num) {
+    const cursor = {
+      line: num,
+      ch: 1
+    }
+    this.editor.setCursor(cursor)
+  }
 
   focus () {
     this.editor.focus()
@@ -538,7 +556,11 @@ export default class CodeEditor extends React.Component {
       )
       return prevChar === '](' && nextChar === ')'
     }
-    if (dataTransferItem.type.match('image')) {
+
+    const pastedHtml = clipboardData.getData('text/html')
+    if (pastedHtml !== '') {
+      this.handlePasteHtml(e, editor, pastedHtml)
+    } else if (dataTransferItem.type.match('image')) {
       attachmentManagement.handlePastImageEvent(
         this,
         storageKey,
@@ -606,6 +628,12 @@ export default class CodeEditor extends React.Component {
       .catch(e => {
         replaceTaggedUrl(pastedTxt)
       })
+  }
+
+  handlePasteHtml (e, editor, pastedHtml) {
+    e.preventDefault()
+    const markdown = this.turndownService.turndown(pastedHtml)
+    editor.replaceSelection(markdown)
   }
 
   mapNormalResponse (response, pastedTxt) {

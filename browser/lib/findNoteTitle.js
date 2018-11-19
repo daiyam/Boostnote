@@ -1,11 +1,13 @@
-export function findNoteTitle (value) {
+export function findNoteTitle (value, enableFrontMatterTitle, frontMatterTitleField = 'title') {
   const splitted = value.split('\n')
 
   if (splitted[0] === '---') {
-    let index = 0
-    while (++index < splitted.length) {
-      if (splitted[index] === '---') {
-        splitted.splice(0, index + 1)
+    let line = 0
+    while (++line < splitted.length) {
+      if (enableFrontMatterTitle && splitted[line].startsWith(frontMatterTitleField + ':')) {
+        return splitted[line].substring(frontMatterTitleField.length + 1).trim()
+      } else if (splitted[line] === '---') {
+        splitted.splice(0, line + 1)
 
         break
       }
