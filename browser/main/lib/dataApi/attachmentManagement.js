@@ -311,7 +311,7 @@ function handleAttachmentDrop (codeEditor, storageKey, noteKey, dropEvent) {
               canvas.height = image.height
               context.drawImage(image, 0, 0)
 
-              return copyAttachment({type: 'base64', data: canvas.toDataURL(), sourceFilePath: imageURL}, storageKey, noteKey)
+              return copyAttachment({type: 'base64', data: canvas.toDataURL('image/webp', 0.92), sourceFilePath: imageURL}, storageKey, noteKey)
             })
             .then(fileName => {
               const imageMd = generateAttachmentMarkdown(imageURL, path.join(STORAGE_FOLDER_PLACEHOLDER, noteKey, fileName), true)
