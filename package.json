@@ -1,9 +1,9 @@
 {
   "name": "boost",
-  "productName": "Boostnote",
+  "productName": "Teanote",
   "version": "0.11.11",
   "main": "index.js",
-  "description": "Boostnote",
+  "description": "Teanote",
   "license": "GPL-3.0",
   "scripts": {
     "start": "electron ./index.js",

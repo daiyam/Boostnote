@@ -109,7 +109,7 @@ class InfoTab extends React.Component {
           <div styleName='icon-space'>
             <img styleName='icon' src='../resources/app.png' width='92' height='92' />
             <div styleName='icon-right'>
-              <div styleName='appId'>{i18n.__('Boostnote')} {appVersion}</div>
+              <div styleName='appId'>{i18n.__('Teanote')} {appVersion}</div>
               <div styleName='description'>
                 {i18n.__('An open source note-taking app made for programmers just like you.')}
               </div>
