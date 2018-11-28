@@ -92,7 +92,6 @@ class TopBar extends React.Component {
   }
 
   handleKeyUp (e) {
-    const { router } = this.context
     // reset states
     this.setState({
       isConfirmTranslation: false
@@ -109,8 +108,6 @@ class TopBar extends React.Component {
   }
 
   handleSearchChange (e) {
-    const { router } = this.context
-    const keyword = this.refs.searchInput.value
     if (this.state.isAlphabet || this.state.isConfirmTranslation) {
       locateSearch(keyword, this.props.location, router)
     } else {
