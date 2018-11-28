@@ -120,7 +120,7 @@ function fixRotate (file) {
       default: break
     }
     ctx.drawImage(img, 0, 0)
-    return canvas.toDataURL()
+    return canvas.toDataURL('image/webp', 0.92)
   })
 }
 
@@ -261,22 +261,27 @@ function generateAttachmentMarkdown (fileName, path, showPreview) {
  * @param {Event} dropEvent DropEvent
  */
 function handleAttachmentDrop (codeEditor, storageKey, noteKey, dropEvent) {
-  const file = dropEvent.dataTransfer.files[0]
-  const filePath = file.path
-  const originalFileName = path.basename(filePath)
-  const fileType = file['type']
-  const isImage = fileType.startsWith('image')
-  let promise
-  if (isImage) {
-    promise = fixRotate(file).then(base64data => {
-      return copyAttachment({type: 'base64', data: base64data, sourceFilePath: filePath}, storageKey, noteKey)
-    })
-  } else {
-    promise = copyAttachment(filePath, storageKey, noteKey)
-  }
-  promise.then((fileName) => {
-    const imageMd = generateAttachmentMarkdown(originalFileName, path.join(STORAGE_FOLDER_PLACEHOLDER, noteKey, fileName), isImage)
-    codeEditor.insertAttachmentMd(imageMd)
+  Promise.all(Array.from(dropEvent.dataTransfer.files).map(file => {
+    if (file['type'].startsWith('image')) {
+      return fixRotate(file)
+        .then(data => copyAttachment({type: 'base64', data: data, sourceFilePath: file.path}, storageKey, noteKey)
+          .then(fileName => ({
+            fileName,
+            originalName: path.basename(file.path),
+            isImage: true
+          }))
+        )
+    } else {
+      return copyAttachment(file.path, storageKey, noteKey).then(fileName => ({
+        fileName,
+        originalName: path.basename(file.path),
+        isImage: false
+      }))
+    }
+  })).then(files => {
+    const attachments = files.map(file => generateAttachmentMarkdown(file.originalName, path.join(STORAGE_FOLDER_PLACEHOLDER, noteKey, file.fileName), file.isImage))
+
+    codeEditor.insertAttachmentMd(attachments.join('\n'))
   })
 }
 
