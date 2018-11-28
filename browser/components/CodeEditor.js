@@ -214,7 +214,7 @@ export default class CodeEditor extends React.Component {
   }
 
   componentDidMount () {
-    const { rulers, enableRulers } = this.props
+    const { rulers, enableRulers, switchPreview } = this.props
     const expandSnippet = this.expandSnippet.bind(this)
     eventEmitter.on('line:jump', this.scrollToLineHandeler)
 
