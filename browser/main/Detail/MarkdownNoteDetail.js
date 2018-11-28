@@ -30,6 +30,7 @@ import { getTodoPercentageOfCompleted } from 'browser/lib/getTodoStatus'
 import striptags from 'striptags'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import markdownToc from 'browser/lib/markdown-toc-generator'
+import { locateNote } from 'browser/lib/location'
 
 class MarkdownNoteDetail extends React.Component {
   constructor (props) {
@@ -148,12 +149,7 @@ class MarkdownNoteDetail extends React.Component {
             originNote: note,
             note: newNote
           })
-          hashHistory.replace({
-            pathname: location.pathname,
-            query: {
-              key: newNote.key
-            }
-          })
+          locateNote(newNote.key, location, hashHistory)
           this.setState({
             isMovingNote: false
           })

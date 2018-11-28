@@ -30,6 +30,7 @@ import { formatDate } from 'browser/lib/date-formatter'
 import i18n from 'browser/lib/i18n'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import markdownToc from 'browser/lib/markdown-toc-generator'
+import { locateNote } from 'browser/lib/location'
 
 const electron = require('electron')
 const { remote } = electron
@@ -164,12 +165,7 @@ class SnippetNoteDetail extends React.Component {
             originNote: note,
             note: newNote
           })
-          hashHistory.replace({
-            pathname: location.pathname,
-            query: {
-              key: newNote.key
-            }
-          })
+          locateNote(newNote.key, location, hashHistory)
           this.setState({
             isMovingNote: false
           })
