@@ -138,6 +138,7 @@ export default class CodeEditor extends React.Component {
 
   updateDefaultKeyMap () {
     const { hotkey } = this.props
+    const expandSnippet = this.expandSnippet.bind(this)
 
     this.defaultKeyMap = CodeMirror.normalizeKeyMap({
       Tab: function (cm) {
@@ -215,7 +216,6 @@ export default class CodeEditor extends React.Component {
 
   componentDidMount () {
     const { rulers, enableRulers, switchPreview } = this.props
-    const expandSnippet = this.expandSnippet.bind(this)
     eventEmitter.on('line:jump', this.scrollToLineHandeler)
 
     const defaultSnippet = [
