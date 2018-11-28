@@ -24,7 +24,8 @@ export const DEFAULT_CONFIG = {
   amaEnabled: true,
   hotkey: {
     toggleMain: OSX ? 'Command + Alt + L' : 'Super + Alt + E',
-    toggleMode: OSX ? 'Command + M' : 'Ctrl + M'
+    toggleMode: OSX ? 'Command + Alt + M' : 'Ctrl + M',
+    deleteNote: OSX ? 'Command + Shift + Backspace' : 'Ctrl + Shift + Backspace'
   },
   ui: {
     language: 'en',
@@ -43,10 +44,15 @@ export const DEFAULT_CONFIG = {
     enableRulers: false,
     rulers: [80, 120],
     displayLineNumbers: true,
-    switchPreview: 'BLUR', // Available value: RIGHTCLICK, BLUR
+    switchPreview: 'BLUR', // 'BLUR', 'DBL_CLICK', 'RIGHTCLICK'
+    delfaultStatus: 'PREVIEW', // 'PREVIEW', 'CODE'
     scrollPastEnd: false,
-    type: 'SPLIT',
-    fetchUrlTitle: true
+    type: 'SPLIT', // 'SPLIT', 'EDITOR_PREVIEW'
+    fetchUrlTitle: true,
+    enableTableEditor: false,
+    enableFrontMatterTitle: true,
+    frontMatterTitleField: 'title',
+    spellcheck: false
   },
   preview: {
     fontSize: '14',
@@ -59,12 +65,14 @@ export const DEFAULT_CONFIG = {
     latexBlockClose: '$$',
     plantUMLServerAddress: 'http://www.plantuml.com/plantuml',
     scrollPastEnd: false,
+    scrollSync: true,
     smartQuotes: true,
     breaks: true,
     smartArrows: false,
     allowCustomCSS: false,
     customCSS: '',
-    sanitize: 'STRICT' // 'STRICT', 'ALLOW_STYLES', 'NONE'
+    sanitize: 'STRICT', // 'STRICT', 'ALLOW_STYLES', 'NONE'
+    lineThroughCheckbox: true
   },
   blog: {
     type: 'wordpress', // Available value: wordpress, add more types in the future plz
@@ -146,6 +154,8 @@ function set (updates) {
     document.body.setAttribute('data-theme', 'solarized-dark')
   } else if (newConfig.ui.theme === 'monokai') {
     document.body.setAttribute('data-theme', 'monokai')
+  } else if (newConfig.ui.theme === 'dracula') {
+    document.body.setAttribute('data-theme', 'dracula')
   } else {
     document.body.setAttribute('data-theme', 'default')
   }
@@ -194,6 +204,7 @@ function rewriteHotkey (config) {
   const keys = [...Object.keys(config.hotkey)]
   keys.forEach(key => {
     config.hotkey[key] = config.hotkey[key].replace(/Cmd/g, 'Command')
+    config.hotkey[key] = config.hotkey[key].replace(/Opt\s/g, 'Option ')
   })
   return config
 }
