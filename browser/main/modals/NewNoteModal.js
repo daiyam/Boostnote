@@ -1,11 +1,9 @@
 import React from 'react'
 import CSSModules from 'browser/lib/CSSModules'
 import styles from './NewNoteModal.styl'
-import dataApi from 'browser/main/lib/dataApi'
-import { hashHistory } from 'react-router'
-import ee from 'browser/main/lib/eventEmitter'
 import ModalEscButton from 'browser/components/ModalEscButton'
 import i18n from 'browser/lib/i18n'
+import { createMarkdownNote, createSnippetNote } from 'browser/lib/newNote'
 
 class NewNoteModal extends React.Component {
   constructor (props) {
@@ -23,29 +21,10 @@ class NewNoteModal extends React.Component {
   }
 
   handleMarkdownNoteButtonClick (e) {
-    const { storage, folder, dispatch, location } = this.props
-    dataApi
-      .createNote(storage, {
-        type: 'MARKDOWN_NOTE',
-        folder: folder,
-        title: '',
-        content: ''
-      })
-      .then(note => {
-        const noteHash = note.key
-        dispatch({
-          type: 'UPDATE_NOTE',
-          note: note
-        })
-
-        hashHistory.push({
-          pathname: location.pathname,
-          query: { key: noteHash }
-        })
-        ee.emit('list:jump', noteHash)
-        ee.emit('detail:focus')
-        setTimeout(this.props.close, 200)
-      })
+    const { storage, folder, dispatch, location, params, config } = this.props
+    createMarkdownNote(storage, folder, dispatch, location, params, config).then(() => {
+      setTimeout(this.props.close, 200)
+    })
   }
 
   handleMarkdownNoteButtonKeyDown (e) {
@@ -56,36 +35,10 @@ class NewNoteModal extends React.Component {
   }
 
   handleSnippetNoteButtonClick (e) {
-    const { storage, folder, dispatch, location, config } = this.props
-
-    dataApi
-      .createNote(storage, {
-        type: 'SNIPPET_NOTE',
-        folder: folder,
-        title: '',
-        description: '',
-        snippets: [
-          {
-            name: '',
-            mode: config.editor.snippetDefaultLanguage || 'text',
-            content: ''
-          }
-        ]
-      })
-      .then(note => {
-        const noteHash = note.key
-        dispatch({
-          type: 'UPDATE_NOTE',
-          note: note
-        })
-        hashHistory.push({
-          pathname: location.pathname,
-          query: { key: noteHash }
-        })
-        ee.emit('list:jump', noteHash)
-        ee.emit('detail:focus')
-        setTimeout(this.props.close, 200)
-      })
+    const { storage, folder, dispatch, location, params, config } = this.props
+    createSnippetNote(storage, folder, dispatch, location, params, config).then(() => {
+      setTimeout(this.props.close, 200)
+    })
   }
 
   handleSnippetNoteButtonKeyDown (e) {
