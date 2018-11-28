@@ -8,6 +8,17 @@
 })(function(CodeMirror) {
   'use strict'
 
+  const blankLine = /^\s*$/
+  const definitionRegex = /^\s*[:~]\s+/
+
+  function matchWithBlankLine(stream, regex) {
+    let index = 0
+    let line
+    while ((line = stream.lookAhead(++index)) != null && blankLine.test(line)) {}
+
+    return regex.test(line)
+  }
+
   const fencedCodeRE = /^(~~~+|```+)[ \t]*([\w+#-]+)?(?:\(((?:\s*\w[-\w]*(?:=(?:'(?:.*?[^\\])?'|"(?:.*?[^\\])?"|(?:[^'"][^\s]*)))?)*)\))?(?::([^:]*)(?::(\d+))?)?\s*$/
 
   function getMode(name, params, config, cm) {
@@ -63,7 +74,10 @@
           fencedEndRE: null,
 
           inTable: false,
-          rowIndex: 0
+          rowIndex: 0,
+
+          definitionTerm: false,
+          definitionIndent: false
         }
       },
       copyState: function(s) {
@@ -81,7 +95,10 @@
           fencedEndRE: s.fencedEndRE,
 
           inTable: s.inTable,
-          rowIndex: s.rowIndex
+          rowIndex: s.rowIndex,
+
+          definitionTerm: s.definitionTerm,
+          definitionIndent: s.definitionIndent
         }
       },
       token: function(stream, state) {
@@ -194,6 +211,32 @@
           return 'table table-header'
         }
 
+        if (state.definitionIndent) {
+          state.definitionIndent = false
+
+          stream.skipToEnd()
+
+          return 'deflist deflist-def'
+        } else if (state.definitionTerm) {
+          if (stream.match(definitionRegex)) {
+            state.definitionIndent = true
+
+            stream.eatSpace()
+
+            return 'deflist deflist-indent'
+          } else {
+            state.definitionTerm = false
+          }
+        }
+
+        if (!state.definitionTerm && matchWithBlankLine(stream, definitionRegex)) {
+          state.definitionTerm = true
+
+          stream.skipToEnd()
+
+          return 'deflist deflist-term'
+        }
+
         stream.skipToEnd()
         return null
       },
@@ -213,6 +256,7 @@
       },
       blankLine: function(state) {
         state.inTable = false
+        state.definitionTerm = false
 
         if (state.fencedMode) {
           return state.fencedMode.blankLine && state.fencedMode.blankLine(state.fencedState)
