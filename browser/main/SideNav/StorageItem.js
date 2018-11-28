@@ -39,6 +39,22 @@ class StorageItem extends React.Component {
         type: 'separator'
       },
       {
+        label: i18n.__('Export Storage'),
+        submenu: [
+          {
+            label: i18n.__('Export as txt'),
+            click: (e) => this.handleExportStorageClick(e, 'txt')
+          },
+          {
+            label: i18n.__('Export as md'),
+            click: (e) => this.handleExportStorageClick(e, 'md')
+          }
+        ]
+      },
+      {
+        type: 'separator'
+      },
+      {
         label: i18n.__('Unlink Storage'),
         click: (e) => this.handleUnlinkStorageClick(e)
       }
@@ -66,6 +82,30 @@ class StorageItem extends React.Component {
           throw err
         })
     }
+  }
+
+  handleExportStorageClick (e, fileType) {
+    const options = {
+      properties: ['openDirectory', 'createDirectory'],
+      buttonLabel: i18n.__('Select directory'),
+      title: i18n.__('Select a folder to export the files to'),
+      multiSelections: false
+    }
+    dialog.showOpenDialog(remote.getCurrentWindow(), options,
+      (paths) => {
+        if (paths && paths.length === 1) {
+          const { storage, dispatch } = this.props
+          dataApi
+            .exportStorage(storage.key, fileType, paths[0])
+            .then(data => {
+              dispatch({
+                type: 'EXPORT_STORAGE',
+                storage: data.storage,
+                fileType: data.fileType
+              })
+            })
+        }
+      })
   }
 
   handleToggleButtonClick (e) {
@@ -234,7 +274,7 @@ class StorageItem extends React.Component {
     const { folderNoteMap, trashedSet } = data
     const SortableStorageItemChild = SortableElement(StorageItemChild)
     const folderList = storage.folders.map((folder, index) => {
-      let folderRegex = new RegExp(escapeStringRegexp(path.sep) + 'storages' + escapeStringRegexp(path.sep) + storage.key + escapeStringRegexp(path.sep) + 'folders' + escapeStringRegexp(path.sep) + folder.key)
+      const folderRegex = new RegExp(escapeStringRegexp(path.sep) + 'storages' + escapeStringRegexp(path.sep) + storage.key + escapeStringRegexp(path.sep) + 'folders' + escapeStringRegexp(path.sep) + folder.key)
       const isActive = !!(location.pathname.match(folderRegex))
       const noteSet = folderNoteMap.get(storage.key + '-' + folder.key)
 
