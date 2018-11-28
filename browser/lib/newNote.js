@@ -1,13 +1,9 @@
 import { hashHistory } from 'react-router'
 import dataApi from 'browser/main/lib/dataApi'
 import ee from 'browser/main/lib/eventEmitter'
-import AwsMobileAnalyticsConfig from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import { locateNote } from 'browser/lib/location'
 
 export function createMarkdownNote (storage, folder, dispatch, location, params, config) {
-  AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_MARKDOWN')
-  AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_ALLNOTE')
-
   let tags = []
   if (config.ui.tagNewNoteWithFilteringTags && location.pathname.match(/\/tags/)) {
     tags = params.tagname.split(' ')
@@ -36,9 +32,6 @@ export function createMarkdownNote (storage, folder, dispatch, location, params,
 }
 
 export function createSnippetNote (storage, folder, dispatch, location, params, config) {
-  AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_SNIPPET')
-  AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_ALLNOTE')
-
   let tags = []
   if (config.ui.tagNewNoteWithFilteringTags && location.pathname.match(/\/tags/)) {
     tags = params.tagname.split(' ')

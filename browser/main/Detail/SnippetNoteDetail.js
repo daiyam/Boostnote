@@ -19,7 +19,6 @@ import ConfigManager from 'browser/main/lib/ConfigManager'
 import _ from 'lodash'
 import {findNoteTitle} from 'browser/lib/findNoteTitle'
 import convertModeName from 'browser/lib/convertModeName'
-import AwsMobileAnalyticsConfig from 'browser/main/lib/AwsMobileAnalyticsConfig'
 import TrashButton from './TrashButton'
 import RestoreButton from './RestoreButton'
 import PermanentDeleteButton from './PermanentDeleteButton'
@@ -141,7 +140,6 @@ class SnippetNoteDetail extends React.Component {
           type: 'UPDATE_NOTE',
           note: note
         })
-        AwsMobileAnalyticsConfig.recordDynamicCustomEvent('EDIT_NOTE')
       })
   }
 
@@ -175,7 +173,6 @@ class SnippetNoteDetail extends React.Component {
 
   handleStarButtonClick (e) {
     const { note } = this.state
-    if (!note.isStarred) AwsMobileAnalyticsConfig.recordDynamicCustomEvent('ADD_STAR')
 
     note.isStarred = !note.isStarred
 
@@ -371,9 +368,6 @@ class SnippetNoteDetail extends React.Component {
     const mode = syntax != null ? syntax.name : null
     if (mode != null) {
       snippets[index].mode = mode
-      AwsMobileAnalyticsConfig.recordDynamicCustomEvent('SNIPPET_LANG', {
-        name: mode
-      })
     }
     this.setState(state => ({note: Object.assign(state.note, {snippets: snippets})}))
 
@@ -394,10 +388,6 @@ class SnippetNoteDetail extends React.Component {
         note: state.note
       }), () => {
         this.save()
-      })
-
-      AwsMobileAnalyticsConfig.recordDynamicCustomEvent('SELECT_LANG', {
-        name
       })
     }
   }

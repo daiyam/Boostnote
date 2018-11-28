@@ -595,13 +595,7 @@ ava@^0.25.0:
     unique-temp-dir "^1.0.0"
     update-notifier "^2.3.0"
 
-aws-sdk-mobile-analytics@^0.9.2:
-  version "0.9.2"
-  resolved "https://registry.yarnpkg.com/aws-sdk-mobile-analytics/-/aws-sdk-mobile-analytics-0.9.2.tgz#b56a6e5206fc8c3975a19170b41536c53f6d5d91"
-  dependencies:
-    aws-sdk ">=2.2.37"
-
-aws-sdk@>=2.2.37, aws-sdk@^2.48.0:
+aws-sdk@^2.48.0:
   version "2.247.1"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.247.1.tgz#be5f220d40665ac91d3a84a51f029fa05560c4ee"
   dependencies:

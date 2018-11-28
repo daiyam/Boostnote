@@ -83,19 +83,6 @@ function notify (...args) {
   return new window.Notification(...args)
 }
 
-function updateApp () {
-  const index = dialog.showMessageBox(remote.getCurrentWindow(), {
-    type: 'warning',
-    message: i18n.__('Update Teanote'),
-    detail: i18n.__('New Teanote is ready to be installed.'),
-    buttons: [i18n.__('Restart & Install'), i18n.__('Not Now')]
-  })
-
-  if (index === 0) {
-    ipcRenderer.send('update-app-confirm')
-  }
-}
-
 ReactDOM.render((
   <Provider store={store}>
     <Router history={history}>
@@ -122,27 +109,4 @@ ReactDOM.render((
 ), el, function () {
   const loadingCover = document.getElementById('loadingCover')
   loadingCover.parentNode.removeChild(loadingCover)
-
-  ipcRenderer.on('update-ready', function () {
-    store.dispatch({
-      type: 'UPDATE_AVAILABLE'
-    })
-    notify('Update ready!', {
-      body: 'New Teanote is ready to be installed.'
-    })
-    updateApp()
-  })
-
-  ipcRenderer.on('update-found', function () {
-    notify('Update found!', {
-      body: 'Preparing to update...'
-    })
-  })
-
-  ipcRenderer.send('update-check', 'check-update')
-  window.addEventListener('online', function () {
-    if (!store.getState().status.updateReady) {
-      ipcRenderer.send('update-check', 'check-update')
-    }
-  })
 })

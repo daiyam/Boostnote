@@ -34,19 +34,6 @@ class StatusBar extends React.Component {
     EventEmitter.off('status:zoomreset', this.handleZoomResetMenuItem)
   }
 
-  updateApp () {
-    const index = dialog.showMessageBox(remote.getCurrentWindow(), {
-      type: 'warning',
-      message: i18n.__('Update Teanote'),
-      detail: i18n.__('New Teanote is ready to be installed.'),
-      buttons: [i18n.__('Restart & Install'), i18n.__('Not Now')]
-    })
-
-    if (index === 0) {
-      ipcRenderer.send('update-app-confirm')
-    }
-  }
-
   handleZoomButtonClick (e) {
     const templates = []
 
@@ -96,13 +83,6 @@ class StatusBar extends React.Component {
           <img src='../resources/icon/icon-zoom.svg' />
           <span>{Math.floor(config.zoom * 100)}%</span>
         </button>
-
-        {status.updateReady
-          ? <button onClick={this.updateApp} styleName='update'>
-            <i styleName='update-icon' className='fa fa-cloud-download' /> {i18n.__('Ready to Update!')}
-          </button>
-          : null
-        }
       </div>
     )
   }
