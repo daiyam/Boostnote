@@ -9,8 +9,8 @@
 })(function (CodeMirror) {
   'use strict'
 
-  var listRE = /^(\s*)(>[> ]*|[*+-] \[[x ]\]\s|[*+-]\s|(\d+)([.)]))(\s*)/
-  var emptyListRE = /^(\s*)(>[> ]*|[*+-] \[[x ]\]|[*+-]|(\d+)[.)])(\s*)$/
+  var listRE = /^(\s*)(\??>[> ]*|[*+-] \[[x ]\]\s|[*+-]\s|(\d+)([.)]))(\s*)/
+  var emptyListRE = /^(\s*)(\??>[> ]*|[*+-] \[[x ]\]|[*+-]|(\d+)[.)])(\s*)$/
   var unorderedListRE = /[*+-]\s/
 
   CodeMirror.commands.boostNewLineAndIndentContinueMarkdownList = function (cm) {
@@ -29,7 +29,7 @@
         return
       }
       if (emptyListRE.test(line)) {
-        if (!/>\s*$/.test(line)) {
+        if (!/\??>\s*$/.test(line)) {
           cm.replaceRange('', {
             line: pos.line, ch: 0
           }, {

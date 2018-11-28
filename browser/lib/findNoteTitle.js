@@ -1,17 +1,12 @@
 export function findNoteTitle (value, enableFrontMatterTitle, frontMatterTitleField = 'title') {
   const splitted = value.split('\n')
-  let title = null
-  let isInsideCodeBlock = false
 
   if (splitted[0] === '---') {
     let line = 0
     while (++line < splitted.length) {
       if (enableFrontMatterTitle && splitted[line].startsWith(frontMatterTitleField + ':')) {
-        title = splitted[line].substring(frontMatterTitleField.length + 1).trim()
-
-        break
-      }
-      if (splitted[line] === '---') {
+        return splitted[line].substring(frontMatterTitleField.length + 1).trim()
+      } else if (splitted[line] === '---') {
         splitted.splice(0, line + 1)
 
         break
@@ -19,31 +14,52 @@ export function findNoteTitle (value, enableFrontMatterTitle, frontMatterTitleFi
     }
   }
 
-  if (title === null) {
-    splitted.some((line, index) => {
-      const trimmedLine = line.trim()
-      const trimmedNextLine = splitted[index + 1] === undefined ? '' : splitted[index + 1].trim()
-      if (trimmedLine.match('```')) {
-        isInsideCodeBlock = !isInsideCodeBlock
+  let index = -1
+  let isInsideCodeBlock = false
+  let codeBlockIndex
+  let line
+  let match
+  while (++index < splitted.length) {
+    line = splitted[index].trim()
+
+    if (/^```/.test(line)) {
+      if (isInsideCodeBlock) {
+        isInsideCodeBlock = false
+
+        const d = index - codeBlockIndex + 1
+        splitted.splice(codeBlockIndex, d)
+
+        index -= d
+      } else {
+        isInsideCodeBlock = true
+
+        codeBlockIndex = index
       }
-      if (isInsideCodeBlock === false && (trimmedLine.match(/^# +/) || trimmedNextLine.match(/^=+$/))) {
-        title = trimmedLine
-        return true
-      }
-    })
+
+      continue
+    } else if (isInsideCodeBlock) {
+      continue
+    } else if ((match = /^\??>[> ]*\s*(.*)$/.exec(line))) {
+      line = match[1]
+    }
+
+    if ((match = /^#+ +(.*)/.exec(line))) {
+      return match[1]
+    } else if (index + 1 < splitted.length && /^=+$/.test(splitted[index + 1].trim())) {
+      return line
+    }
+
+    splitted[index] = line
   }
 
-  if (title === null) {
-    title = ''
-    splitted.some((line) => {
-      if (line.trim().length > 0) {
-        title = line.trim()
-        return true
-      }
-    })
+  index = -1
+  while (++index < splitted.length) {
+    if (splitted[index].length > 0) {
+      return splitted[index]
+    }
   }
 
-  return title
+  return null
 }
 
 export default {

@@ -9,13 +9,13 @@ const { findNoteTitle } = require('browser/lib/findNoteTitle')
 test('findNoteTitle#find  should return a correct title (string)', t => {
   // [input, expected]
   const testCases = [
-    ['# hoge\nfuga', '# hoge'],
-    ['# hoge_hoge_hoge', '# hoge_hoge_hoge'],
+    ['# hoge\nfuga', 'hoge'],
+    ['# hoge_hoge_hoge', 'hoge_hoge_hoge'],
     ['hoge\n====\nfuga', 'hoge'],
     ['====', '===='],
-    ['```\n# hoge\n```', '```'],
+    ['```\n# hoge\n```', null],
     ['hoge', 'hoge'],
-    ['---\nlayout: test\n---\n # hoge', '# hoge']
+    ['---\nlayout: test\n---\n # hoge', 'hoge']
   ]
 
   testCases.forEach(testCase => {
@@ -27,9 +27,9 @@ test('findNoteTitle#find  should return a correct title (string)', t => {
 test('findNoteTitle#find  should ignore front matter when enableFrontMatterTitle=false', t => {
   // [input, expected]
   const testCases = [
-    ['---\nlayout: test\ntitle:  hoge hoge hoge  \n---\n# fuga', '# fuga'],
-    ['---\ntitle:hoge\n---\n# fuga', '# fuga'],
-    ['title: fuga\n# hoge', '# hoge']
+    ['---\nlayout: test\ntitle:  hoge hoge hoge  \n---\n# fuga', 'fuga'],
+    ['---\ntitle:hoge\n---\n# fuga', 'fuga'],
+    ['title: fuga\n# hoge', 'hoge']
   ]
 
   testCases.forEach(testCase => {
@@ -43,7 +43,7 @@ test('findNoteTitle#find  should respect front matter when enableFrontMatterTitl
   const testCases = [
     ['---\nlayout: test\ntitle:  hoge hoge hoge  \n---\n# fuga', 'hoge hoge hoge'],
     ['---\ntitle:hoge\n---\n# fuga', 'hoge'],
-    ['title: fuga\n# hoge', '# hoge']
+    ['title: fuga\n# hoge', 'hoge']
   ]
 
   testCases.forEach(testCase => {
@@ -55,7 +55,7 @@ test('findNoteTitle#find  should respect front matter when enableFrontMatterTitl
 test('findNoteTitle#find  should respect frontMatterTitleField when provided', t => {
   // [input, expected]
   const testCases = [
-    ['---\ntitle: hoge\n---\n# fuga', '# fuga'],
+    ['---\ntitle: hoge\n---\n# fuga', 'fuga'],
     ['---\ncustom: hoge\n---\n# fuga', 'hoge']
   ]
 
