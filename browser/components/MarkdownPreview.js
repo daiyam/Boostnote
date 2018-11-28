@@ -210,7 +210,7 @@ export default class MarkdownPreview extends React.Component {
     this.saveAsHtmlHandler = () => this.handleSaveAsHtml()
     this.printHandler = () => this.handlePrint()
 
-    this.linkClickHandler = this.handlelinkClick.bind(this)
+    this.linkClickHandler = this.handleLinkClick.bind(this)
     this.initMarkdown = this.initMarkdown.bind(this)
     this.initMarkdown()
   }
@@ -446,6 +446,8 @@ export default class MarkdownPreview extends React.Component {
   }
 
   componentDidMount () {
+    const { onDrop } = this.props
+
     this.refs.root.setAttribute('sandbox', 'allow-scripts')
     this.refs.root.contentWindow.document.body.addEventListener(
       'contextmenu',
@@ -483,7 +485,7 @@ export default class MarkdownPreview extends React.Component {
     )
     this.refs.root.contentWindow.document.addEventListener(
       'drop',
-      this.preventImageDroppedHandler
+      onDrop || this.preventImageDroppedHandler
     )
     this.refs.root.contentWindow.document.addEventListener(
       'dragover',
@@ -500,6 +502,8 @@ export default class MarkdownPreview extends React.Component {
   }
 
   componentWillUnmount () {
+    const { onDrop } = this.props
+
     this.refs.root.contentWindow.document.body.removeEventListener(
       'contextmenu',
       this.contextMenuHandler
@@ -518,7 +522,7 @@ export default class MarkdownPreview extends React.Component {
     )
     this.refs.root.contentWindow.document.removeEventListener(
       'drop',
-      this.preventImageDroppedHandler
+      onDrop || this.preventImageDroppedHandler
     )
     this.refs.root.contentWindow.document.removeEventListener(
       'dragover',
@@ -873,7 +877,7 @@ export default class MarkdownPreview extends React.Component {
     return new window.Notification(title, options)
   }
 
-  handlelinkClick (e) {
+  handleLinkClick (e) {
     e.preventDefault()
     e.stopPropagation()
 
