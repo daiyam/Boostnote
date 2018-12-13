@@ -26,6 +26,7 @@ export const DEFAULT_CONFIG = {
     toggleMain: OSX ? 'Command + Alt + L' : 'Super + Alt + E',
     toggleMode: OSX ? 'Command + Alt + M' : 'Ctrl + M',
     deleteNote: OSX ? 'Command + Shift + Backspace' : 'Ctrl + Shift + Backspace',
+    pasteSmartly: OSX ? 'Command + Shift + V' : 'Ctrl + Shift + V',
     foldAll: OSX ? 'Command + O' : 'Control + O',
     unfoldAll: OSX ? 'Command + Shift + O' : 'Control + Shift + O',
     foldLevel1: OSX ? 'Control + 1' : 'Alt + 1',
@@ -64,7 +65,8 @@ export const DEFAULT_CONFIG = {
     enableTableEditor: false,
     enableFrontMatterTitle: true,
     frontMatterTitleField: 'title',
-    spellcheck: false
+    spellcheck: false,
+    enableSmartPaste: false
   },
   preview: {
     fontSize: '14',
