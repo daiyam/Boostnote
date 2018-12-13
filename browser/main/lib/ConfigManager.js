@@ -27,7 +27,7 @@ export const DEFAULT_CONFIG = {
     toggleMode: OSX ? 'Command + Alt + M' : 'Ctrl + M',
     deleteNote: OSX ? 'Command + Shift + Backspace' : 'Ctrl + Shift + Backspace',
     foldAll: OSX ? 'Command + O' : 'Control + O',
-    unfoldAll: OSX ? 'Command + Shift O' : 'Control + Shift + O',
+    unfoldAll: OSX ? 'Command + Shift + O' : 'Control + Shift + O',
     foldLevel1: OSX ? 'Control + 1' : 'Alt + 1',
     foldLevel2: OSX ? 'Control + 2' : 'Alt + 2',
     foldLevel3: OSX ? 'Control + 3' : 'Alt + 3',
@@ -63,7 +63,8 @@ export const DEFAULT_CONFIG = {
     fetchUrlTitle: true,
     enableTableEditor: false,
     enableFrontMatterTitle: true,
-    frontMatterTitleField: 'title'
+    frontMatterTitleField: 'title',
+    spellcheck: false
   },
   preview: {
     fontSize: '14',
