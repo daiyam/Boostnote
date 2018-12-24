@@ -24,9 +24,9 @@ class MarkdownSplitEditor extends React.Component {
     this.refs.code.setValue(value)
   }
 
-  handleOnChange () {
+  handleOnChange (e) {
     this.value = this.refs.code.value
-    this.props.onChange()
+    this.props.onChange(e)
   }
 
   handleScroll (e) {
@@ -136,7 +136,7 @@ class MarkdownSplitEditor extends React.Component {
   }
 
   render () {
-    const {config, value, storageKey, noteKey} = this.props
+    const {config, value, storageKey, noteKey, linesHighlighted} = this.props
     const storage = findStorage(storageKey)
     let editorFontSize = parseInt(config.editor.fontSize, 10)
     if (!(editorFontSize > 0 && editorFontSize < 101)) editorFontSize = 14
@@ -170,8 +170,9 @@ class MarkdownSplitEditor extends React.Component {
           storageKey={storageKey}
           noteKey={noteKey}
           hotkey={config.hotkey}
-          onChange={this.handleOnChange.bind(this)}
-          onScroll={this.handleScroll.bind(this)}
+          linesHighlighted={linesHighlighted}
+          onChange={(e) => this.handleOnChange(e)}
+          onScroll={(e) => this.handleScroll(e)}
           spellCheck={config.editor.spellcheck}
           enableSmartPaste={config.editor.enableSmartPaste}
           switchPreview={config.editor.switchPreview}
@@ -198,7 +199,7 @@ class MarkdownSplitEditor extends React.Component {
           tabInde='0'
           value={value}
           onCheckboxClick={(e) => this.handleCheckboxClick(e)}
-          onScroll={this.handleScroll.bind(this)}
+          onScroll={(e) => this.handleScroll(e)}
           showCopyNotification={config.ui.showCopyNotification}
           storagePath={storage.path}
           noteKey={noteKey}
