@@ -55,15 +55,50 @@ class TagSelect extends React.Component {
   }
 
   buildSuggestions () {
-    this.suggestions = _.sortBy(this.props.data.tagNoteMap.map(
-      (tag, name) => ({
-        name,
-        nameLC: name.toLowerCase(),
-        size: tag.size
+    const { data, location } = this.props
+
+    if (this.storage === location.query.storage) {
+      return
+    }
+
+    let tagList
+    if (typeof location.query.storage !== 'undefined' && location.query.storage !== '') {
+      const id = location.query.storage.substr(1)
+
+      let noteMap
+      if (location.query.storage[0] === 's') {
+        noteMap = data.noteMap.filter(note => note.storage === id)
+      } else {
+        noteMap = data.noteMap.filter(note => note.folder === id)
+      }
+
+      tagList = []
+
+      const tags = {}
+
+      noteMap.forEach(note => {
+        note.tags.forEach(name => {
+          if (tags[name]) {
+            tags[name].size++
+          } else {
+            const tag = { name, nameLC: name.toLowerCase(), size: 1 }
+
+            tags[name] = tag
+
+            tagList.push(tag)
+          }
+        })
       })
-    ).filter(
-      tag => tag.size > 0
-    ), ['name'])
+    } else {
+       tagList = data.tagNoteMap.map(
+        (tag, name) => ({ name, nameLC: name.toLowerCase(), size: tag.size })
+      ).filter(
+        tag => tag.size > 0
+      )
+    }
+
+    this.suggestions = _.sortBy(tagList, ['name'])
+    this.storage = location.query.storage || ''
   }
 
   componentDidMount () {
@@ -76,6 +111,8 @@ class TagSelect extends React.Component {
 
   componentDidUpdate () {
     this.value = this.props.value
+
+    this.buildSuggestions()
   }
 
   componentWillUnmount () {

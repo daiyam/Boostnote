@@ -11,7 +11,7 @@ import TagListItem from 'browser/components/TagListItem'
 import SideNavFilter from 'browser/components/SideNavFilter'
 import StorageList from 'browser/components/StorageList'
 import NavToggleButton from 'browser/components/NavToggleButton'
-import EventEmitter from 'browser/main/lib/eventEmitter'
+import ee from 'browser/main/lib/eventEmitter'
 import PreferenceButton from './PreferenceButton'
 import ListButton from './ListButton'
 import TagButton from './TagButton'
@@ -30,11 +30,11 @@ class SideNav extends React.Component {
   // TODO: should not use electron stuff v0.7
 
   componentDidMount () {
-    EventEmitter.on('side:preferences', this.handleMenuButtonClick)
+    ee.on('side:preferences', this.handleMenuButtonClick)
   }
 
   componentWillUnmount () {
-    EventEmitter.off('side:preferences', this.handleMenuButtonClick)
+    ee.off('side:preferences', this.handleMenuButtonClick)
   }
 
   deleteTag (tag) {
