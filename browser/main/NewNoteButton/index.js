@@ -55,9 +55,26 @@ class NewNoteButton extends React.Component {
   }
 
   resolveTargetFolder () {
-    const { data, params } = this.props
+    const { data, params, location, config } = this.props
     let storage = data.storageMap.get(params.storageKey)
+    let folder = null
 
+    if (storage == null && config.ui.tagNewNoteWithFilteringTags) {
+      const id = location.query.storage.substr(1)
+
+      if (location.query.storage[0] === 's') {
+        storage = data.storageMap.get(id)
+      } else {
+        for (const [kst, st] of data.storageMap) {
+          for (const fl of st.folders) {
+            if (fl.key === id) {
+              storage = st
+              folder = fl
+            }
+          }
+        }
+      }
+    }
     // Find first storage
     if (storage == null) {
       for (const kv of data.storageMap) {
@@ -65,10 +82,16 @@ class NewNoteButton extends React.Component {
         break
       }
     }
+    if (storage == null) {
+      this.showMessageBox(i18n.__('No storage to create a note'))
+    }
 
-    if (storage == null) this.showMessageBox(i18n.__('No storage to create a note'))
-    const folder = _.find(storage.folders, {key: params.folderKey}) || storage.folders[0]
-    if (folder == null) this.showMessageBox(i18n.__('No folder to create a note'))
+    if (folder == null) {
+      folder = _.find(storage.folders, {key: params.folderKey}) || storage.folders[0]
+    }
+    if (folder == null) {
+      this.showMessageBox(i18n.__('No folder to create a note'))
+    }
 
     return {
       storage,
