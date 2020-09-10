@@ -198,18 +198,6 @@ class MarkdownNoteDetail extends React.Component {
           this.focusEditor()
         }
         break
-      // I key
-      case 73:
-        {
-          const isSuper = global.process.platform === 'darwin'
-            ? e.metaKey
-            : e.ctrlKey
-          if (isSuper) {
-            e.preventDefault()
-            this.handleInfoButtonClick(e)
-          }
-        }
-        break
     }
   }
 

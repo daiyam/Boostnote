@@ -31,26 +31,45 @@ class MarkdownSplitEditor extends React.Component {
         top = 0
       } else {
         const blocks = []
-        for (const block of previewDoc.querySelectorAll('body>[data-line]')) {
+        let lastLine = editor.doc.size
+
+        const lines = previewDoc.querySelectorAll('body>[data-line]')
+        for (const [index, block] of lines.entries()) {
           const l = parseInt(block.getAttribute('data-line'))
 
           blocks.push({
             line: l,
-            top: block.offsetTop
+            top: block.offsetTop,
+            height: block.offsetHeight
           })
 
           if (l > line) {
+            if (index + 1 < lines.length) {
+              lastLine = parseInt(lines[index + 1].getAttribute('data-line'))
+            }
+
             break
           }
         }
 
         const i = blocks.length - 1
         if (i > 0) {
-          const ratio = (blocks[i].top - blocks[i - 1].top) / (blocks[i].line - blocks[i - 1].line)
+          const lastBlock = blocks[i]
+          if (line === lastBlock.line) {
+            top = lastBlock.top
+          } else if (line < lastBlock.line) {
+            const ratio = (lastBlock.top - blocks[i - 1].top) / (lastBlock.line - blocks[i - 1].line)
 
-          const delta = Math.floor(_.get(previewDoc, 'body.clientHeight') / 3)
+            const delta = Math.floor(_.get(previewDoc, 'body.clientHeight') / 3)
 
-          top = blocks[i - 1].top + Math.floor((line - blocks[i - 1].line) * ratio) - delta
+            top = blocks[i - 1].top + Math.floor((line - blocks[i - 1].line) * ratio) - delta
+          } else {
+            const ratio = lastBlock.height / (lastLine - lastBlock.line)
+
+            const delta = Math.floor(_.get(previewDoc, 'body.clientHeight') / 3)
+
+            top = lastBlock.top + ((line - lastBlock.line - 1) * ratio) + delta
+          }
         } else {
           const srcTop = _.get(editor.doc, 'scrollTop')
           const srcHeight = _.get(editor.doc, 'height')

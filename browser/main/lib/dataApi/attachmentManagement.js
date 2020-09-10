@@ -314,9 +314,9 @@ function handleAttachmentDrop (codeEditor, storageKey, noteKey, dropEvent) {
               return copyAttachment({type: 'base64', data: canvas.toDataURL('image/webp', 0.92), sourceFilePath: imageURL}, storageKey, noteKey, true, '.webp')
             })
             .then(fileName => {
-              const imageMd = generateAttachmentMarkdown(imageURL, path.join(STORAGE_FOLDER_PLACEHOLDER, noteKey, fileName), true)
+              const imageMd = generateAttachmentMarkdown('', path.join(STORAGE_FOLDER_PLACEHOLDER, noteKey, fileName), true)
 
-              codeEditor.insertAttachmentMd(imageMd)
+              codeEditor.insertAttachmentMd(imageMd + '\n')
             })
 
           break
