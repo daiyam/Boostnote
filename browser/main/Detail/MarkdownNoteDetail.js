@@ -426,6 +426,7 @@ class MarkdownNoteDetail extends React.Component {
           showTagsAlphabetically={config.ui.showTagsAlphabetically}
           data={data}
           onChange={this.handleUpdateTag.bind(this)}
+          location={location}
         />
         <TodoListPercentage onClearCheckboxClick={(e) => this.handleClearTodo(e)} percentageOfTodo={getTodoPercentageOfCompleted(note.content)} />
       </div>

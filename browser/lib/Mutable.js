@@ -45,6 +45,10 @@ class MutableMap {
     return result
   }
 
+  filter (...args) {
+    return this.map(val => val).filter(...args)
+  }
+
   toJS () {
     const result = {}
     for (let [key, value] of this._map) {

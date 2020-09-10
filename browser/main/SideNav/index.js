@@ -20,6 +20,7 @@ import i18n from 'browser/lib/i18n'
 import context from 'browser/lib/context'
 import { remote } from 'electron'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
+import { locateStorage, locateTags } from 'browser/lib/location'
 
 function matchActiveTags (tags, activeTags) {
   return _.every(activeTags, v => tags.indexOf(v) >= 0)
@@ -75,7 +76,7 @@ class SideNav extends React.Component {
             if (index !== -1) {
               tags.splice(index, 1)
 
-              this.context.router.push(`/tags/${tags.map(tag => encodeURIComponent(tag)).join(' ')}`)
+              locateTags(tags.join(' '), location, this.context.router)
             }
           }
         })
@@ -129,7 +130,16 @@ class SideNav extends React.Component {
 
   handleSwitchTagsButtonClick () {
     const { router } = this.context
-    router.push('/alltags')
+    const { location } = this.props
+
+    router.push({
+      pathname: `/alltags`,
+      query: {
+        key: location.query.key || '',
+        search: '',
+        storage: location.query.storage || ''
+      }
+    })
   }
 
   onSortEnd (storage) {
@@ -198,6 +208,23 @@ class SideNav extends React.Component {
           <div styleName='tagList'>
             {this.tagListComponent(data)}
           </div>
+          <div styleName='tag-control'>
+            <div styleName='tag-control-storage'>
+              <i className='fa fa-angle-down' />
+              <select styleName='tag-control-storage-select'
+                value={location.query.storage}
+                onChange={(e) => this.handleStorageChange(e)}
+              >
+                 <option title='All notes' value=''>{i18n.__('All notes')}</option>
+                {data.storageMap.map(storage => [
+                  (<option value={`s${storage.key}`}>{storage.name}</option>),
+                  ...storage.folders.map(folder => (
+                    <option value={`f${folder.key}`}>&nbsp; &nbsp; {folder.name}</option>
+                  ))
+                ])}
+              </select>
+            </div>
+          </div>
         </div>
       )
     }
@@ -209,13 +236,44 @@ class SideNav extends React.Component {
     const { data, location, config } = this.props
     const activeTags = this.getActiveTags(location.pathname)
     const relatedTags = this.getRelatedTags(activeTags, data.noteMap)
-    let tagList = _.sortBy(data.tagNoteMap.map(
-      (tag, name) => ({ name, size: tag.size, related: relatedTags.has(name) })
-    ).filter(
-      tag => tag.size > 0
-    ), ['name'])
+    let tagList
+    let noteMap = data.noteMap
+    if (typeof location.query.storage !== 'undefined' && location.query.storage !== '') {
+      const id = location.query.storage.substr(1)
+
+      if (location.query.storage[0] === 's') {
+        noteMap = noteMap.filter(note => note.storage === id)
+      } else {
+        noteMap = noteMap.filter(note => note.folder === id)
+      }
+
+      tagList = []
+
+      const tags = {}
+
+      noteMap.forEach(note => {
+        note.tags.forEach(name => {
+          if (tags[name]) {
+            tags[name].size++
+          } else {
+            const tag = { name, size: 1, related: relatedTags.has(name) }
+
+            tags[name] = tag
+
+            tagList.push(tag)
+          }
+        })
+      })
+    } else {
+       tagList = data.tagNoteMap.map(
+        (tag, name) => ({ name, size: tag.size, related: relatedTags.has(name) })
+      ).filter(
+        tag => tag.size > 0
+      )
+    }
+    tagList = _.sortBy(tagList, ['name'])
     if (config.ui.enableLiveNoteCounts && activeTags.length !== 0) {
-      const notesTags = data.noteMap.map(note => note.tags)
+      const notesTags = noteMap.map(note => note.tags)
       tagList = tagList.map(tag => {
         tag.size = notesTags.filter(tags => tags.includes(tag.name) && matchActiveTags(tags, activeTags)).length
         return tag
@@ -275,7 +333,9 @@ class SideNav extends React.Component {
 
   handleClickTagListItem (name) {
     const { router } = this.context
-    router.push(`/tags/${encodeURIComponent(name)}`)
+    const { location } = this.props
+
+    locateTags(name, location, router)
   }
 
   handleSortTagsByChange (e) {
@@ -292,6 +352,13 @@ class SideNav extends React.Component {
     })
   }
 
+  handleStorageChange (e) {
+    const { router } = this.context
+    const { location } = this.props
+
+    locateStorage(e.target.value, location, router)
+  }
+
   handleClickNarrowToTag (tag) {
     const { router } = this.context
     const { location } = this.props
@@ -302,7 +369,8 @@ class SideNav extends React.Component {
     } else {
       listOfTags.push(tag)
     }
-    router.push(`/tags/${encodeURIComponent(listOfTags.join(' '))}`)
+
+    locateTags(listOfTags.join(' '), location, router)
   }
 
   emptyTrash (entries) {

@@ -50,6 +50,16 @@ function getNoteKey (note) {
   return note.key
 }
 
+function limitToStorage (notes, storage) {
+  const id = storage.substr(1)
+
+  if (storage[0] === 's') {
+    return notes.filter(note => note.storage === id)
+  } else {
+    return notes.filter(note => note.folder === id)
+  }
+}
+
 class NoteList extends React.Component {
   constructor (props) {
     super(props)
@@ -126,6 +136,10 @@ class NoteList extends React.Component {
       notes = notes.filter(note => !note.isTrashed)
     }
 
+    if (typeof location.query.storage !== 'undefined' && location.query.storage !== '') {
+      notes = limitToStorage(notes, location.query.storage)
+    }
+
     if (typeof location.query.search !== 'undefined' && location.query.search !== '') {
       const search = decodeURIComponent(location.query.search)
 
@@ -194,7 +208,8 @@ class NoteList extends React.Component {
         pathname: location.pathname,
         query: {
           key: noteKey,
-          search: location.query.search || ''
+          search: location.query.search || '',
+          storage: location.query.storage || ''
         }
       })
       return

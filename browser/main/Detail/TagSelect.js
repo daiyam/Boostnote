@@ -6,6 +6,7 @@ import _ from 'lodash'
 import i18n from 'browser/lib/i18n'
 import ee from 'browser/main/lib/eventEmitter'
 import Autosuggest from 'react-autosuggest'
+import { locateTags } from 'browser/lib/location'
 
 class TagSelect extends React.Component {
   constructor (props) {
@@ -87,7 +88,9 @@ class TagSelect extends React.Component {
 
   handleTagLabelClick (tag) {
     const { router } = this.context
-    router.push(`/tags/${tag}`)
+    const { location } = this.props
+
+    locateTags(tag, location, router)
   }
 
   handleTagRemoveButtonClick (tag) {
