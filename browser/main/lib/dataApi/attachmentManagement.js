@@ -143,7 +143,7 @@ function fixRotate (file) {
  * @param {boolean} useRandomName determines whether a random filename for the new file is used. If false the source file name is used
  * @return {Promise<String>} name (inclusive extension) of the generated file
  */
-function copyAttachment (sourceFilePath, storageKey, noteKey, useRandomName = true) {
+function copyAttachment (sourceFilePath, storageKey, noteKey, useRandomName = true, extname = '') {
   return new Promise((resolve, reject) => {
     if (!sourceFilePath) {
       reject('sourceFilePath has to be given')
@@ -165,7 +165,7 @@ function copyAttachment (sourceFilePath, storageKey, noteKey, useRandomName = tr
       const targetStorage = findStorage.findStorage(storageKey)
       let destinationName
       if (useRandomName) {
-        destinationName = `${uniqueSlug()}${path.extname(sourceFilePath.sourceFilePath || sourceFilePath)}`
+        destinationName = `${uniqueSlug()}${extname || path.extname(sourceFilePath.sourceFilePath || sourceFilePath)}`
       } else {
         destinationName = path.basename(sourceFilePath.sourceFilePath || sourceFilePath)
       }
@@ -311,7 +311,7 @@ function handleAttachmentDrop (codeEditor, storageKey, noteKey, dropEvent) {
               canvas.height = image.height
               context.drawImage(image, 0, 0)
 
-              return copyAttachment({type: 'base64', data: canvas.toDataURL('image/webp', 0.92), sourceFilePath: imageURL}, storageKey, noteKey)
+              return copyAttachment({type: 'base64', data: canvas.toDataURL('image/webp', 0.92), sourceFilePath: imageURL}, storageKey, noteKey, true, '.webp')
             })
             .then(fileName => {
               const imageMd = generateAttachmentMarkdown(imageURL, path.join(STORAGE_FOLDER_PLACEHOLDER, noteKey, fileName), true)
