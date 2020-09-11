@@ -14,7 +14,8 @@ class TagSelect extends React.Component {
 
     this.state = {
       newTag: '',
-      suggestions: []
+      suggestions: [],
+      mouseOverTag: null
     }
 
     this.handleAddTag = this.handleAddTag.bind(this)
@@ -56,10 +57,6 @@ class TagSelect extends React.Component {
 
   buildSuggestions () {
     const { data, location } = this.props
-
-    if (this.storage === location.query.storage) {
-      return
-    }
 
     let tagList
     if (typeof location.query.storage !== 'undefined' && location.query.storage !== '') {
@@ -112,7 +109,9 @@ class TagSelect extends React.Component {
   componentDidUpdate () {
     this.value = this.props.value
 
-    this.buildSuggestions()
+     if (this.storage !== this.props.location.query.storage) {
+      this.buildSuggestions()
+     }
   }
 
   componentWillUnmount () {
@@ -215,18 +214,28 @@ class TagSelect extends React.Component {
     this.addNewTag(this.refs.newTag.input.value)
   }
 
+  setMouseOver(tag) {
+    this.setState({
+      mouseOverTag: tag
+    })
+  }
+
   render () {
     const { value, className, showTagsAlphabetically } = this.props
+    const { newTag, suggestions, mouseOverTag } = this.state
 
     const tagList = _.isArray(value)
       ? (showTagsAlphabetically ? _.sortBy(value) : value).map((tag) => {
         return (
           <span styleName='tag'
             key={tag}
+            className={mouseOverTag === tag ? 'TagSelect__over___browser-main-Detail-' : ''}
           >
             <span styleName='tag-label' onClick={(e) => this.handleTagLabelClick(tag)}>#{tag}</span>
             <button styleName='tag-removeButton'
               onClick={(e) => this.handleTagRemoveButtonClick(tag)}
+              onMouseEnter={(e) => this.setMouseOver(tag)}
+              onMouseLeave={(e) => this.setMouseOver(null)}
             >
               <img className='tag-removeButton-icon' src='../resources/icon/icon-x.svg' width='8px' />
             </button>
@@ -234,8 +243,6 @@ class TagSelect extends React.Component {
         )
       })
       : []
-
-    const { newTag, suggestions } = this.state
 
     return (
       <div className={_.isString(className)

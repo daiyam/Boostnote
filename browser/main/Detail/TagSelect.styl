@@ -22,6 +22,9 @@
   position relative
   clearfix()
 
+  &.over
+    background-color alpha($ui-tag-backgroundColor, 10%)
+
 .tag-removeButton
   margin 0
   padding 0
@@ -47,6 +50,9 @@ body[data-theme="dark"]
   .tag
     background-color alpha($ui-dark-tag-backgroundColor, 60%)
 
+    &.over
+      background-color alpha($ui-dark-tag-backgroundColor, 20%)
+
   .tag-removeButton
     border-color $ui-button--focus-borderColor
     background-color transparent
@@ -59,6 +65,9 @@ body[data-theme="solarized-dark"]
   .tag
     background-color $ui-solarized-dark-tag-backgroundColor
 
+    &.over
+      background-color alpha($ui-solarized-dark-tag-backgroundColor, 60%)
+
   .tag-removeButton
     border-color $ui-button--focus-borderColor
     background-color transparent
@@ -70,6 +79,9 @@ body[data-theme="monokai"]
   .tag
     background-color $ui-monokai-tag-backgroundColor
 
+    &.over
+      background-color alpha($ui-monokai-tag-backgroundColor, 60%)
+
   .tag-removeButton
     border-color $ui-button--focus-borderColor
     background-color transparent
@@ -80,6 +92,9 @@ body[data-theme="monokai"]
 body[data-theme="dracula"]
   .tag
     background-color $ui-dracula-tag-backgroundColor
+
+    &.over
+      background-color alpha($ui-dracula-tag-backgroundColor, 80%)
 
   .tag-removeButton
     border-color $ui-dracula-button--focus-borderColor
