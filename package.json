@@ -13,7 +13,8 @@
     "fix": "eslint . --fix",
     "lint": "eslint .",
     "dev": "node dev-scripts/dev.js",
-    "watch": "webpack-dev-server --hot"
+    "watch": "webpack-dev-server --hot",
+    "build": "grunt build"
   },
   "config": {
     "electron-version": "3.0.8"
