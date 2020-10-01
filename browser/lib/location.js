@@ -20,17 +20,6 @@ export function locateSearch (search, location, history) {
   })
 }
 
-export function locateStorage (storage, location, history) {
-  history.push({
-    pathname: location.pathname,
-    query: {
-      key: location.query.key || '',
-      search: location.query.search || '',
-      storage
-    }
-  })
-}
-
 export function locateTags (tags, location, history) {
   history.push({
     pathname: `/tags/${encodeURIComponent(tags)}`,

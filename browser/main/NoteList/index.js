@@ -164,6 +164,11 @@ class NoteList extends React.Component {
 
       locateNote(key, location, this.context.router)
     }
+    else if (selectedNoteKeys.length > 0 && !location.query.key) {
+      this.setState({
+        selectedNoteKeys: []
+      })
+    }
 
     this.noteComponent = config.listStyle === 'DEFAULT' ? NoteItem : NoteItemSimple
   }

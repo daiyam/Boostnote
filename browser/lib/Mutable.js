@@ -97,6 +97,10 @@ class MutableSet {
     return result
   }
 
+  some (...args) {
+    return this.toJS().some(...args)
+  }
+
   toJS () {
     return Array.from(this._set)
   }

@@ -21,7 +21,7 @@ import i18n from 'browser/lib/i18n'
 import context from 'browser/lib/context'
 import { remote } from 'electron'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
-import { locateStorage, locateTags } from 'browser/lib/location'
+import { locateTags } from 'browser/lib/location'
 
 function matchActiveTags(tags, activeTags) {
   return _.every(activeTags, v => tags.indexOf(v) >= 0)
@@ -374,9 +374,38 @@ class SideNav extends React.Component {
 
   handleStorageChange(e) {
     const { router } = this.context
-    const { location } = this.props
+    const { data, location } = this.props
 
-    locateStorage(e.target.value, location, router)
+    const storage = e.target.value
+    const id = storage.substr(1)
+    const test = storage[0] === 'f' ? (note) => data.noteMap.get(note).folder === id : (note) => data.noteMap.get(note).storage === id
+
+    let key = location.query.key || ''
+    if (key && !test(key)) {
+      key = ''
+    }
+
+    let pathname = location.pathname
+
+    let activeTags = this.getActiveTags(pathname)
+    if (activeTags.length > 0) {
+      activeTags = activeTags.filter(tag => data.tagNoteMap.get(tag).some((note) => test(note)))
+
+      if (activeTags.length === 0) {
+        pathname = `/alltags`
+      } else {
+        pathname = `/tags/${encodeURIComponent(activeTags.join(' '))}`
+      }
+    }
+
+    router.push({
+      pathname,
+      query: {
+        key,
+        search: location.query.search || '',
+        storage
+      }
+    })
   }
 
   handleClickNarrowToTag(tag) {
