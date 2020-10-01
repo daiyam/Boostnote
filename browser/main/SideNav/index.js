@@ -4,7 +4,8 @@ import CSSModules from 'browser/lib/CSSModules'
 import dataApi from 'browser/main/lib/dataApi'
 import styles from './SideNav.styl'
 import { openModal } from 'browser/main/lib/modal'
-import PreferencesModal from '../modals/PreferencesModal'
+import PreferencesModal from 'browser/main/modals/PreferencesModal'
+import RenameTagModal from 'browser/main/modals/RenameTagModal'
 import ConfigManager from 'browser/main/lib/ConfigManager'
 import StorageItem from './StorageItem'
 import TagListItem from 'browser/components/TagListItem'
@@ -15,29 +16,29 @@ import ee from 'browser/main/lib/eventEmitter'
 import PreferenceButton from './PreferenceButton'
 import ListButton from './ListButton'
 import TagButton from './TagButton'
-import {SortableContainer} from 'react-sortable-hoc'
+import { SortableContainer } from 'react-sortable-hoc'
 import i18n from 'browser/lib/i18n'
 import context from 'browser/lib/context'
 import { remote } from 'electron'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import { locateStorage, locateTags } from 'browser/lib/location'
 
-function matchActiveTags (tags, activeTags) {
+function matchActiveTags(tags, activeTags) {
   return _.every(activeTags, v => tags.indexOf(v) >= 0)
 }
 
 class SideNav extends React.Component {
   // TODO: should not use electron stuff v0.7
 
-  componentDidMount () {
+  componentDidMount() {
     ee.on('side:preferences', this.handleMenuButtonClick)
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     ee.off('side:preferences', this.handleMenuButtonClick)
   }
 
-  deleteTag (tag) {
+  handleDeleteTagClick(tag) {
     const selectedButton = remote.dialog.showMessageBox(remote.getCurrentWindow(), {
       ype: 'warning',
       message: i18n.__('Confirm tag deletion'),
@@ -83,52 +84,71 @@ class SideNav extends React.Component {
     }
   }
 
-  handleMenuButtonClick (e) {
-    openModal(PreferencesModal)
-  }
-
-  handleHomeButtonClick (e) {
+  handleHomeButtonClick(e) {
     const { router } = this.context
     router.push('/home')
   }
 
-  handleStarredButtonClick (e) {
+  handleMenuButtonClick(e) {
+    openModal(PreferencesModal)
+  }
+
+  handleRenameTagClick(tagName) {
+    const { data, dispatch, location, params } = this.props
+    const { router } = this.context
+
+    openModal(RenameTagModal, {
+      tagName,
+      data,
+      dispatch,
+      location,
+      params,
+      router
+    })
+  }
+
+  handleStarredButtonClick(e) {
     const { router } = this.context
     router.push('/starred')
   }
 
-  handleTagContextMenu (e, tag) {
-    const menu = []
-
-    menu.push({
-      label: i18n.__('Delete Tag'),
-      click: this.deleteTag.bind(this, tag)
-    })
-
-    context.popup(menu)
+  handleTagContextMenu(e, tag) {
+    context.popup([
+      {
+        label: i18n.__('Rename Tag'),
+        click: this.handleRenameTagClick.bind(this, tag)
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: i18n.__('Delete Tag'),
+        click: this.handleDeleteTagClick.bind(this, tag)
+      }
+    ])
   }
 
-  handleToggleButtonClick (e) {
+  handleToggleButtonClick(e) {
     const { dispatch, config } = this.props
 
-    ConfigManager.set({isSideNavFolded: !config.isSideNavFolded})
+    ConfigManager.set({ isSideNavFolded: !config.isSideNavFolded })
     dispatch({
       type: 'SET_IS_SIDENAV_FOLDED',
       isFolded: !config.isSideNavFolded
     })
   }
 
-  handleTrashedButtonClick (e) {
+  handleTrashedButtonClick(e) {
     const { router } = this.context
     router.push('/trashed')
   }
 
-  handleSwitchFoldersButtonClick () {
+  handleSwitchFoldersButtonClick() {
     const { router } = this.context
     router.push('/home')
   }
 
-  handleSwitchTagsButtonClick () {
+  handleSwitchTagsButtonClick() {
     const { router } = this.context
     const { location } = this.props
 
@@ -142,8 +162,8 @@ class SideNav extends React.Component {
     })
   }
 
-  onSortEnd (storage) {
-    return ({oldIndex, newIndex}) => {
+  onSortEnd(storage) {
+    return ({ oldIndex, newIndex }) => {
       const { dispatch } = this.props
       dataApi
         .reorderFolder(storage.key, oldIndex, newIndex)
@@ -153,7 +173,7 @@ class SideNav extends React.Component {
     }
   }
 
-  SideNavComponent (isFolded, storageList) {
+  SideNavComponent(isFolded, storageList) {
     const { location, data, config } = this.props
 
     const isHomeActive = !!location.pathname.match(/^\/home$/)
@@ -215,7 +235,7 @@ class SideNav extends React.Component {
                 value={location.query.storage}
                 onChange={(e) => this.handleStorageChange(e)}
               >
-                 <option title='All notes' value=''>{i18n.__('All notes')}</option>
+                <option title='All notes' value=''>{i18n.__('All notes')}</option>
                 {data.storageMap.map(storage => [
                   (<option value={`s${storage.key}`}>{storage.name}</option>),
                   ...storage.folders.map(folder => (
@@ -232,7 +252,7 @@ class SideNav extends React.Component {
     return component
   }
 
-  tagListComponent () {
+  tagListComponent() {
     const { data, location, config } = this.props
     const activeTags = this.getActiveTags(location.pathname)
     const relatedTags = this.getRelatedTags(activeTags, data.noteMap)
@@ -265,7 +285,7 @@ class SideNav extends React.Component {
         })
       })
     } else {
-       tagList = data.tagNoteMap.map(
+      tagList = data.tagNoteMap.map(
         (tag, name) => ({ name, size: tag.size, related: relatedTags.has(name) })
       ).filter(
         tag => tag.size > 0
@@ -305,12 +325,12 @@ class SideNav extends React.Component {
     )
   }
 
-  getRelatedTags (activeTags, noteMap) {
+  getRelatedTags(activeTags, noteMap) {
     if (activeTags.length === 0) {
       return new Set()
     }
     const relatedNotes = noteMap.map(
-      note => ({key: note.key, tags: note.tags})
+      note => ({ key: note.key, tags: note.tags })
     ).filter(
       note => activeTags.every(tag => note.tags.includes(tag))
     )
@@ -319,11 +339,11 @@ class SideNav extends React.Component {
     return relatedTags
   }
 
-  getTagActive (path, tag) {
+  getTagActive(path, tag) {
     return this.getActiveTags(path).includes(tag)
   }
 
-  getActiveTags (path) {
+  getActiveTags(path) {
     const pathSegments = path.split('/')
     const tags = pathSegments[pathSegments.length - 1]
     return (tags === 'alltags')
@@ -331,14 +351,14 @@ class SideNav extends React.Component {
       : decodeURIComponent(tags).split(' ')
   }
 
-  handleClickTagListItem (name) {
+  handleClickTagListItem(name) {
     const { router } = this.context
     const { location } = this.props
 
     locateTags(name, location, router)
   }
 
-  handleSortTagsByChange (e) {
+  handleSortTagsByChange(e) {
     const { dispatch } = this.props
 
     const config = {
@@ -352,14 +372,14 @@ class SideNav extends React.Component {
     })
   }
 
-  handleStorageChange (e) {
+  handleStorageChange(e) {
     const { router } = this.context
     const { location } = this.props
 
     locateStorage(e.target.value, location, router)
   }
 
-  handleClickNarrowToTag (tag) {
+  handleClickNarrowToTag(tag) {
     const { router } = this.context
     const { location } = this.props
     const listOfTags = this.getActiveTags(location.pathname)
@@ -373,7 +393,7 @@ class SideNav extends React.Component {
     locateTags(listOfTags.join(' '), location, router)
   }
 
-  emptyTrash (entries) {
+  emptyTrash(entries) {
     const { dispatch } = this.props
     const deletionPromises = entries.map((note) => {
       return dataApi.deleteNote(note.storage, note.key)
@@ -381,17 +401,17 @@ class SideNav extends React.Component {
     const { confirmDeletion } = this.props.config.ui
     if (!confirmDeleteNote(confirmDeletion, true)) return
     Promise.all(deletionPromises)
-    .then((arrayOfStorageAndNoteKeys) => {
-      arrayOfStorageAndNoteKeys.forEach(({ storageKey, noteKey }) => {
-        dispatch({ type: 'DELETE_NOTE', storageKey, noteKey })
+      .then((arrayOfStorageAndNoteKeys) => {
+        arrayOfStorageAndNoteKeys.forEach(({ storageKey, noteKey }) => {
+          dispatch({ type: 'DELETE_NOTE', storageKey, noteKey })
+        })
       })
-    })
-    .catch((err) => {
-      console.error('Cannot Delete note: ' + err)
-    })
+      .catch((err) => {
+        console.error('Cannot Delete note: ' + err)
+      })
   }
 
-  handleFilterButtonContextMenu (event) {
+  handleFilterButtonContextMenu(event) {
     const { data } = this.props
     const trashedNotes = data.trashedSet.toJS().map((uniqueKey) => data.noteMap.get(uniqueKey))
     context.popup([
@@ -399,7 +419,7 @@ class SideNav extends React.Component {
     ])
   }
 
-  render () {
+  render() {
     const { data, location, config, dispatch } = this.props
 
     const isFolded = config.isSideNavFolded

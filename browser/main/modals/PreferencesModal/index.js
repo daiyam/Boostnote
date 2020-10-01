@@ -4,10 +4,8 @@ import { connect } from 'react-redux'
 import HotkeyTab from './HotkeyTab'
 import UiTab from './UiTab'
 import InfoTab from './InfoTab'
-import Crowdfunding from './Crowdfunding'
 import StoragesTab from './StoragesTab'
 import SnippetTab from './SnippetTab'
-import Blog from './Blog'
 import ModalEscButton from 'browser/components/ModalEscButton'
 import CSSModules from 'browser/lib/CSSModules'
 import styles from './PreferencesModal.styl'
@@ -21,8 +19,7 @@ class Preferences extends React.Component {
     this.state = {
       currentTab: 'STORAGES',
       UIAlert: '',
-      HotkeyAlert: '',
-      BlogAlert: ''
+      HotkeyAlert: ''
     }
   }
 
@@ -74,18 +71,6 @@ class Preferences extends React.Component {
             haveToSave={alert => this.setState({UIAlert: alert})}
           />
         )
-      case 'CROWDFUNDING':
-        return (
-          <Crowdfunding />
-        )
-      case 'BLOG':
-        return (
-          <Blog
-            dispatch={dispatch}
-            config={config}
-            haveToSave={alert => this.setState({BlogAlert: alert})}
-          />
-        )
       case 'SNIPPET':
         return (
           <SnippetTab
@@ -129,10 +114,8 @@ class Preferences extends React.Component {
       {target: 'STORAGES', label: i18n.__('Storage')},
       {target: 'HOTKEY', label: i18n.__('Hotkeys'), Hotkey: this.state.HotkeyAlert},
       {target: 'UI', label: i18n.__('Interface'), UI: this.state.UIAlert},
+      {target: 'SNIPPET', label: i18n.__('Snippets')},
       {target: 'INFO', label: i18n.__('About')},
-      {target: 'CROWDFUNDING', label: i18n.__('Crowdfunding')},
-      {target: 'BLOG', label: i18n.__('Blog'), Blog: this.state.BlogAlert},
-      {target: 'SNIPPET', label: i18n.__('Snippets')}
     ]
 
     const navButtons = tabs.map((tab) => {

@@ -11,7 +11,7 @@ const { shell, remote } = electron
 const appVersion = remote.app.getVersion()
 
 class InfoTab extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.state = {
@@ -19,82 +19,14 @@ class InfoTab extends React.Component {
     }
   }
 
-  handleLinkClick (e) {
+  handleLinkClick(e) {
     shell.openExternal(e.currentTarget.href)
     e.preventDefault()
   }
 
-  handleConfigChange (e) {
-    const newConfig = { amaEnabled: this.refs.amaEnabled.checked }
-
-    this.setState({ config: newConfig })
-  }
-
-  handleSaveButtonClick (e) {
-    const newConfig = {
-      amaEnabled: this.state.config.amaEnabled
-    }
-
-    if (!newConfig.amaEnabled) {
-      this.setState({
-        amaMessage: i18n.__('We hope we will gain your trust')
-      })
-    } else {
-      this.setState({
-        amaMessage: i18n.__('Thank\'s for trusting us')
-      })
-    }
-
-    _.debounce(() => {
-      this.setState({
-        amaMessage: ''
-      })
-    }, 3000)()
-
-    ConfigManager.set(newConfig)
-
-    store.dispatch({
-      type: 'SET_CONFIG',
-      config: newConfig
-    })
-  }
-
-  render () {
+  render() {
     return (
       <div styleName='root'>
-
-        <div styleName='header--sub'>{i18n.__('Community')}</div>
-        <div styleName='top'>
-          <ul styleName='list'>
-            <li>
-              <a href='https://boostnote.io/#subscribe'
-                onClick={(e) => this.handleLinkClick(e)}
-              >{i18n.__('Subscribe to Newsletter')}</a>
-            </li>
-            <li>
-              <a href='https://github.com/BoostIO/Boostnote/issues'
-                onClick={(e) => this.handleLinkClick(e)}
-              >{i18n.__('GitHub')}</a>
-            </li>
-            <li>
-              <a href='https://medium.com/boostnote'
-                onClick={(e) => this.handleLinkClick(e)}
-              >{i18n.__('Blog')}</a>
-            </li>
-            <li>
-              <a href='https://www.facebook.com/groups/boostnote'
-                onClick={(e) => this.handleLinkClick(e)}
-              >{i18n.__('Facebook Group')}</a>
-            </li>
-            <li>
-              <a href='https://twitter.com/boostnoteapp'
-                onClick={(e) => this.handleLinkClick(e)}
-              >{i18n.__('Twitter')}</a>
-            </li>
-          </ul>
-        </div>
-
-        <hr />
 
         <div styleName='header--sub'>{i18n.__('About')}</div>
 
@@ -104,25 +36,15 @@ class InfoTab extends React.Component {
             <div styleName='icon-right'>
               <div styleName='appId'>{i18n.__('Teanote')} {appVersion}</div>
               <div styleName='description'>
-                {i18n.__('An open source note-taking app made for programmers just like you.')}
+                {i18n.__('An open source tea-taking app made for tea connoisseurs just like you.')}
               </div>
             </div>
           </div>
         </div>
 
         <ul styleName='list'>
-          <li>
-            <a href='https://boostnote.io'
-              onClick={(e) => this.handleLinkClick(e)}
-            >{i18n.__('Website')}</a>
-          </li>
-          <li>
-            <a href='https://github.com/BoostIO/Boostnote/blob/master/docs/build.md'
-              onClick={(e) => this.handleLinkClick(e)}
-            >{i18n.__('Development')}</a>{i18n.__(' : Development configurations for Boostnote.')}
-          </li>
           <li styleName='cc'>
-            {i18n.__('Copyright (C) 2017 - 2018 BoostIO')}
+            {i18n.__('Copyright © 2017 - 2020 BoostIO & daiyam')}
           </li>
           <li styleName='cc'>
             {i18n.__('License: GPL v3')}
