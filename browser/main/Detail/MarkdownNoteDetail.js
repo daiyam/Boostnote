@@ -30,6 +30,7 @@ import striptags from 'striptags'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import markdownToc from 'browser/lib/markdown-toc-generator'
 import { locateNote } from 'browser/lib/location'
+import { updateRemaining } from 'browser/main/lib/remaining'
 
 class MarkdownNoteDetail extends React.Component {
   constructor (props) {
@@ -49,6 +50,7 @@ class MarkdownNoteDetail extends React.Component {
 
     this.toggleLockButton = this.handleToggleLockButton.bind(this)
     this.generateToc = () => this.handleGenerateToc()
+    this.updateRemaining = () => this.handleUpdateRemaining()
   }
 
   focus () {
@@ -63,6 +65,8 @@ class MarkdownNoteDetail extends React.Component {
     })
     ee.on('hotkey:deletenote', this.handleDeleteNote.bind(this))
     ee.on('code:generate-toc', this.generateToc)
+
+    ee.on('code:update-remaining', this.updateRemaining)
   }
 
   componentWillReceiveProps (nextProps) {
@@ -82,6 +86,7 @@ class MarkdownNoteDetail extends React.Component {
   componentWillUnmount () {
     ee.off('topbar:togglelockbutton', this.toggleLockButton)
     ee.off('code:generate-toc', this.generateToc)
+    ee.off('code:update-remaining', this.updateRemaining)
     if (this.saveQueue != null) this.saveNow()
   }
 
@@ -328,6 +333,17 @@ class MarkdownNoteDetail extends React.Component {
     this.refs.content.setValue(note.content)
 
     this.updateNote(note)
+  }
+
+  handleUpdateRemaining () {
+    const old = this.state.note.content.length
+    const note = updateRemaining(this.state.note)
+
+    if(old !== note.content.length) {
+      this.refs.content.setValue(note.content)
+
+      this.updateNote(note)
+    }
   }
 
   renderEditor () {

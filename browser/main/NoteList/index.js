@@ -21,6 +21,7 @@ import i18n from 'browser/lib/i18n'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import context from 'browser/lib/context'
 import { locateNote } from 'browser/lib/location'
+import { isRemaining, notifyRemaining, updateRemaining } from 'browser/main/lib/remaining'
 
 const { remote } = require('electron')
 const { dialog } = remote
@@ -89,6 +90,7 @@ class NoteList extends React.Component {
     this.restoreNote = this.restoreNote.bind(this)
     this.copyNoteLink = this.copyNoteLink.bind(this)
     this.navigate = this.navigate.bind(this)
+    this.getRemaining = () => this.handleGetRemaining()
 
     // TODO: not Selected noteKeys but SelectedNote(for reusing)
     this.state = {
@@ -113,6 +115,7 @@ class NoteList extends React.Component {
     ee.on('import:file', this.importFromFileHandler)
     ee.on('list:jump', this.jumpNoteByHash)
     ee.on('list:navigate', this.navigate)
+    ee.on('list:get-remaining', this.getRemaining)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -186,6 +189,7 @@ class NoteList extends React.Component {
     ee.off('list:isMarkdownNote', this.alertIfSnippetHandler)
     ee.off('import:file', this.importFromFileHandler)
     ee.off('list:jump', this.jumpNoteByHash)
+    ee.off('list:get-remaining', this.getRemaining)
   }
 
   componentDidUpdate(prevProps) {
@@ -239,6 +243,40 @@ class NoteList extends React.Component {
         }
       }
     }
+  }
+
+  handleGetRemaining() {
+    const { dispatch } = this.props
+
+    Promise.all(
+      this.notes
+        .filter((note) => isRemaining(note))
+        .map((note) => {
+          const old = note.content.length
+
+          note = updateRemaining(note)
+
+          if(old !== note.content.length) {
+            return dataApi.updateNote(note.storage, note.key, note)
+          }
+          else {
+            return note
+          }
+        })
+    )
+    .then((notes) => {
+      notes.forEach((note) => {
+        dispatch({
+          type: 'UPDATE_NOTE',
+          note
+        })
+      })
+
+      return notes
+    })
+    .then((notes) => {
+      notifyRemaining(notes)
+    })
   }
 
   focusNote(selectedNoteKeys, noteKey) {
