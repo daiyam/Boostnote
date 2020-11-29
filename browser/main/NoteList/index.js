@@ -90,7 +90,7 @@ class NoteList extends React.Component {
     this.restoreNote = this.restoreNote.bind(this)
     this.copyNoteLink = this.copyNoteLink.bind(this)
     this.navigate = this.navigate.bind(this)
-    this.getRemaining = () => this.handleGetRemaining()
+    this.showRemaining = () => this.handleShowRemaining()
 
     // TODO: not Selected noteKeys but SelectedNote(for reusing)
     this.state = {
@@ -115,7 +115,7 @@ class NoteList extends React.Component {
     ee.on('import:file', this.importFromFileHandler)
     ee.on('list:jump', this.jumpNoteByHash)
     ee.on('list:navigate', this.navigate)
-    ee.on('list:get-remaining', this.getRemaining)
+    ee.on('list:show-remaining', this.showRemaining)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -189,7 +189,7 @@ class NoteList extends React.Component {
     ee.off('list:isMarkdownNote', this.alertIfSnippetHandler)
     ee.off('import:file', this.importFromFileHandler)
     ee.off('list:jump', this.jumpNoteByHash)
-    ee.off('list:get-remaining', this.getRemaining)
+    ee.off('list:show-remaining', this.showRemaining)
   }
 
   componentDidUpdate(prevProps) {
@@ -245,7 +245,7 @@ class NoteList extends React.Component {
     }
   }
 
-  handleGetRemaining() {
+  handleShowRemaining() {
     const { dispatch } = this.props
 
     Promise.all(
@@ -271,12 +271,8 @@ class NoteList extends React.Component {
           note
         })
       })
-
-      return notes
     })
-    .then((notes) => {
-      notifyRemaining(notes)
-    })
+    .then(() => notifyRemaining(this.notes))
   }
 
   focusNote(selectedNoteKeys, noteKey) {

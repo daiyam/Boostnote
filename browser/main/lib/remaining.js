@@ -41,9 +41,27 @@ function isRemaining(note) {
 }
 
 function notifyRemaining(notes) {
-  const rem = notes.map((note) => getRemaining(note)).reduce((acc, value) => acc + value, 0)
+  let available = 0
+  let unknown = 0
 
-  alert(`Remaining: ${new Intl.NumberFormat('en-US').format(rem)}g`)
+  const rem = notes
+    .filter((note) => {
+      if(note.tags.includes('⃠⃠⃠')) {
+        return false
+      }
+      else if(!TEST_REGEX.test(note.content)) {
+        ++unknown
+        return false
+      }
+      else {
+        ++available
+        return true
+      }
+    })
+    .map((note) => getRemaining(note))
+    .reduce((acc, value) => acc + value, 0)
+
+  alert(`Remaining: ${new Intl.NumberFormat('en-US').format(rem)}g / ${available}${unknown ? `  (${unknown})` : ``}`)
 }
 
 function updateRemaining(note) {
