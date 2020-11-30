@@ -117,7 +117,11 @@ class Markdown {
     })
     this.md.use(require('markdown-it-imsize'))
     this.md.use(require('markdown-it-footnote'))
-    this.md.use(require('markdown-it-multimd-table'))
+    this.md.use(require('markdown-it-multimd-table'), {
+      multiline:  true,
+      rowspan:    true,
+      headerless: true,
+    })
     this.md.use(anchor, {
       slugify: (title) => {
         var slug = encodeURI(title.trim()

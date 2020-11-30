@@ -2,9 +2,9 @@ import moment from 'moment'
 
 const REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\([\d\.]+(?:,\s+([\d\.]+)g?)?\)[ \t]*/g
 const TEST_REGEX = /\n\t+~\s+([\d\.]+)g\s+\([\d\.]+(?:,\s+([\d\.]+)g?)?\)[ \t]*/
-const USAGE_REGEX = /\n\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+[\w\+]+\s+\|\s+(?:\d+ml)?\s+\|\s+([\d\.]+)g/g
+const USAGE_REGEX = /\n\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+([\d\.]+)g/g
 
-function getRemaining(note) {
+function getRemaining(note) { // {{{
   let last = null
 
   let match
@@ -34,13 +34,13 @@ function getTag(rem) {
   else {
     return `⚖${parseInt(rem / 10)}0`
   }
-}
+} // }}}
 
-function isRemaining(note) {
+function isRemaining(note) { // {{{
   return !note.tags.includes('⃠⃠⃠') && TEST_REGEX.test(note.content)
-}
+} // }}}
 
-function notifyRemaining(notes) {
+function notifyRemaining(notes) { // {{{
   let available = 0
   let unknown = 0
 
@@ -62,9 +62,9 @@ function notifyRemaining(notes) {
     .reduce((acc, value) => acc + value, 0)
 
   alert(`Remaining: ${new Intl.NumberFormat('en-US').format(rem)}g / ${available}${unknown ? `  (${unknown})` : ``}`)
-}
+} // }}}
 
-function updateRemaining(note) {
+function updateRemaining(note) { // {{{
   if(note.tags.includes('⃠⃠⃠')) {
     return note
   }
@@ -103,7 +103,7 @@ function updateRemaining(note) {
   }
 
   return note
-}
+} // }}}
 
 export {
   isRemaining,

@@ -10,10 +10,16 @@
   'use strict'
 
   const shell = require('electron').shell
+  const remote = require('electron').remote
+  const mdurl = require('mdurl')
   const yOffset = 2
 
   const macOS = global.process.platform === 'darwin'
   const modifier = macOS ? 'metaKey' : 'ctrlKey'
+
+  function emit() {
+    remote.getCurrentWindow().webContents.send.apply(null, arguments)
+  }
 
   class HyperLink {
     constructor(cm) {
@@ -51,7 +57,11 @@
       const className = el.className.split(' ')
 
       if (className.indexOf('cm-url') !== -1) {
-        const match = /^\((.*)\)|\[(.*)\]|(.*)$/.exec(el.textContent)
+        // multiple cm-url because of search term
+        const cmUrlSpans = Array.from(el.parentNode.getElementsByClassName('cm-url'))
+        const textContent = cmUrlSpans.length > 1 ? cmUrlSpans.map(span => span.textContent).join('') : el.textContent
+
+        const match = /^\((.*)\)|\[(.*)\]|(.*)$/.exec(textContent)
         const url = match[1] || match[2] || match[3]
 
         // `:storage` is the value of the variable `STORAGE_FOLDER_PLACEHOLDER` defined in `browser/main/lib/dataApi/attachmentManagement`
@@ -67,9 +77,35 @@
       }
 
       const url = this.getUrl(target)
-      if (url) {
-        e.preventDefault()
+      if (!url) {
+        return
+      }
 
+      e.preventDefault()
+
+      let match
+      if((match = /^#(.*)$/.exec(url))) {
+        const id = mdurl.encode(match[1])
+
+        const lines = this.cm.getValue().split('\n')
+        for(let i = 0, l = lines.length - 1; i < l; ++i) {
+          const line = lines[i]
+
+          if((match = /^#+\s+(.*)$/.exec(line)) && mdurl.encode(match[1]) === id) {
+            return emit('line:jump', i)
+          }
+        }
+      }
+      else if((match = /^:note:([a-zA-Z0-9-]{20,36})$/.exec(url))) {
+        emit('list:jump', match[1])
+      }
+      else if((match = /^:line:([0-9])/.exec(url))) {
+        emit('line:jump', parseInt(match[1]))
+      }
+      else if((match = /^:tag:([\w]+)$/)) {
+        emit('dispatch:push', `/tags/${encodeURIComponent(match[1])}`)
+      }
+      else {
         shell.openExternal(url)
       }
     }

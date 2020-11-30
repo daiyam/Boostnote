@@ -21,7 +21,7 @@ import i18n from 'browser/lib/i18n'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import context from 'browser/lib/context'
 import { locateNote } from 'browser/lib/location'
-import { isRemaining, notifyRemaining, updateRemaining } from 'browser/main/lib/remaining'
+import { isRemaining, notifyRemaining, updateRemaining } from 'browser/main/lib/tea'
 
 const { remote } = require('electron')
 const { dialog } = remote

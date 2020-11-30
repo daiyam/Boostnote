@@ -30,7 +30,7 @@ import striptags from 'striptags'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import markdownToc from 'browser/lib/markdown-toc-generator'
 import { locateNote } from 'browser/lib/location'
-import { updateRemaining } from 'browser/main/lib/remaining'
+import { updateRemaining } from 'browser/main/lib/tea'
 
 class MarkdownNoteDetail extends React.Component {
   constructor (props) {
@@ -66,7 +66,7 @@ class MarkdownNoteDetail extends React.Component {
     ee.on('hotkey:deletenote', this.handleDeleteNote.bind(this))
     ee.on('code:generate-toc', this.generateToc)
 
-    ee.on('code:update-remaining', this.updateRemaining)
+    ee.on('note:update-remaining', this.updateRemaining)
   }
 
   componentWillReceiveProps (nextProps) {
@@ -86,7 +86,7 @@ class MarkdownNoteDetail extends React.Component {
   componentWillUnmount () {
     ee.off('topbar:togglelockbutton', this.toggleLockButton)
     ee.off('code:generate-toc', this.generateToc)
-    ee.off('code:update-remaining', this.updateRemaining)
+    ee.off('note:update-remaining', this.updateRemaining)
     if (this.saveQueue != null) this.saveNow()
   }
 

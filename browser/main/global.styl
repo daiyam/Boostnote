@@ -143,22 +143,22 @@ body[data-theme="dark"]
 .CodeMirror-hyperlink
   cursor pointer
 
-
 .sortableItemHelper
   z-index modalZIndex + 5
 
 .cm-deflist-defline
-  padding-left 3.3rem !important
+  [role=presentation]
+    display flex
 
-.cm-deflist-indent
-  min-width 3.3rem
-  max-width 3.3rem
-  margin-left -3.3rem
-  white-space nowrap
-  overflow hidden
+  .cm-deflist-indent
+    display flex
+    min-width 6ch
+    max-width 8ch
+    white-space nowrap
+    overflow hidden
 
-  > .cm-tab:first-child
-    min-width: 2.1rem
+  .cm-tab
+    width 4ch
 
 body[data-theme="solarized-dark"]
   ::-webkit-scrollbar-thumb
