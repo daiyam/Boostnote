@@ -14,3 +14,7 @@ trim_trailing_whitespace = true
 [{*.yml,*.yaml,package.json}]
 indent_style = space
 indent_size = 2
+
+[browser/main/lib/tea.js]
+indent_style = tab
+indent_size = 4

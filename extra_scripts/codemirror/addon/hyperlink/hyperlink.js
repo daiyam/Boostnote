@@ -56,7 +56,7 @@
     getUrl(el) {
       const className = el.className.split(' ')
 
-      if (className.indexOf('cm-url') !== -1) {
+      if (className.includes('cm-url')) {
         // multiple cm-url because of search term
         const cmUrlSpans = Array.from(el.parentNode.getElementsByClassName('cm-url'))
         const textContent = cmUrlSpans.length > 1 ? cmUrlSpans.map(span => span.textContent).join('') : el.textContent
@@ -66,6 +66,30 @@
 
         // `:storage` is the value of the variable `STORAGE_FOLDER_PLACEHOLDER` defined in `browser/main/lib/dataApi/attachmentManagement`
         return /^:storage(?:\/|%5C)/.test(url) ? null : url
+      }
+
+      if (className.includes('cm-link')) {
+        const link = `${el.textContent}:`
+        const term = `${el.textContent}`
+
+        for(const el of document.getElementsByClassName('cm-link')) {
+          if(el.textContent === link) {
+            return this.getUrl(el.nextElementSibling)
+          }
+          else if(el.className.includes('cm-deflist-term') && el.textContent === term) {
+            const cmLine = el.parentElement.parentElement
+            const line = cmLine.previousElementSibling.className.includes('CodeMirror-gutter-wrapper') ? cmLine.parentElement : cmLine
+            const nextLine = line.nextElementSibling
+            const urlEl = nextLine.getElementsByClassName('cm-url')[0]
+
+            if(urlEl) {
+              return this.getUrl(urlEl)
+            }
+            else {
+              return null
+            }
+          }
+        }
       }
 
       return null
@@ -161,6 +185,10 @@
   }
 
   CodeMirror.defineOption('hyperlink', true, (cm) => {
+    const addon = new HyperLink(cm)
+  })
+
+  CodeMirror.defineOption('link', true, (cm) => {
     const addon = new HyperLink(cm)
   })
 })

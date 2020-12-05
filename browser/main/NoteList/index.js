@@ -248,31 +248,14 @@ class NoteList extends React.Component {
   handleShowRemaining() {
     const { dispatch } = this.props
 
-    Promise.all(
-      this.notes
-        .filter((note) => isRemaining(note))
-        .map((note) => {
-          const old = note.content.length
-
-          note = updateRemaining(note)
-
-          if(old !== note.content.length) {
-            return dataApi.updateNote(note.storage, note.key, note)
-          }
-          else {
-            return note
-          }
-        })
-    )
-    .then((notes) => {
-      notes.forEach((note) => {
-        dispatch({
-          type: 'UPDATE_NOTE',
-          note
-        })
-      })
-    })
-    .then(() => notifyRemaining(this.notes))
+    Promise
+      .all(
+        this.notes
+          .filter((note) => isRemaining(note))
+          .map((note) => updateRemaining(note, dispatch))
+      )
+      .then(() => ee.emit('note:refresh'))
+      .then(() => notifyRemaining(this.notes))
   }
 
   focusNote(selectedNoteKeys, noteKey) {
