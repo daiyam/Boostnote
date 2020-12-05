@@ -4,7 +4,7 @@ import ee from 'browser/main/lib/eventEmitter'
 import moment from 'moment'
 
 const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
-const BREW_REGEX = /\n\|\s+(?:\d+\.)?(\d+\.\d+)\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g|\[(#[\w\-]+)\])/g
+const BREW_REGEX = /\n\|\s+(?:\d+\.)?(\d+\.\d+)\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g|\[(#[\w\-]+)\])/g
 const DEFLIST_LINK_REGEX = /\n\[([\w\-]+)\][ \t]*\n\t~[ \t]+\[[^\]]+\]\(:note:([\w\-]+)\)/g
 const LINK_REGEX = /\n\[([^\]]+)\]:\s+:note:([\w\-]+)/g
 const MIX_BREW_REGEX = /\n\|\s+(?:\d+\.)?(\d+\.\d+)\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[(#?[\w\-]+)\]/g
@@ -207,7 +207,7 @@ function buildTableContext(content, tagNoteMap, newSearch) { // {{{
 		headers.push(match[1])
 	}
 
-	let style, country, shop, type, p3
+	let style, country, shop, type, p2, p3
 
 	const last = lines.length - 1
 	const searchs = []
@@ -228,14 +228,31 @@ function buildTableContext(content, tagNoteMap, newSearch) { // {{{
 
 			style && (max[0] = Math.max(max[0], cells[0].length))
 		}
+
+		p2 = ''
 		if (cells[1].length === 0) {
 			country = null
 		}
 		else if (cells[1] !== '^^') {
-			country = cells[1] || null
+			if (tagNoteMap.has(cells[1])) {
+				country = cells[1]
+			}
+			else {
+				country = null
+
+				if (tagNoteMap.has(`≈${cells[1]}`)) {
+					shop = `≈${cells[1]}`
+					p2 = 's'
+				}
+				else if (tagNoteMap.has(cells[1].toLowerCase())) {
+					type = cells[1].toLowerCase()
+					p2 = 't'
+				}
+			}
 
 			style && (max[1] = Math.max(max[1], cells[1].length))
 		}
+
 		if (cells[2] === '^^') {
 			if (!(type || shop)) {
 				search = false
@@ -245,8 +262,16 @@ function buildTableContext(content, tagNoteMap, newSearch) { // {{{
 			p3 = ''
 
 			if (cells[2].length === 0) {
-				type = null
-				shop = null
+				if (p2 === 's') {
+					type = null
+				}
+				else if (p2 === 't') {
+					shop = null
+				}
+				else {
+					type = null
+					shop = null
+				}
 			}
 			else if (tagNoteMap.has(`≈${cells[2]}`)) {
 				shop = `≈${cells[2]}`
@@ -262,6 +287,7 @@ function buildTableContext(content, tagNoteMap, newSearch) { // {{{
 
 			max[2] = Math.max(max[2], cells[2].length)
 		}
+
 		if (search && cells[3] !== '^^') {
 			if (cells[3].length === 0) {
 				if (p3 === 's') {
@@ -270,7 +296,7 @@ function buildTableContext(content, tagNoteMap, newSearch) { // {{{
 				else if (p3 === 't') {
 					shop = null
 				}
-				else {
+				else if(!p2) {
 					type = null
 					shop = null
 				}
