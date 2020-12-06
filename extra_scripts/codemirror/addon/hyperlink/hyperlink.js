@@ -126,7 +126,7 @@
       else if((match = /^:line:([0-9])/.exec(url))) {
         emit('line:jump', parseInt(match[1]))
       }
-      else if((match = /^:tag:([\w]+)$/)) {
+      else if((match = /^:tag:([\w]+)$/.exec(url))) {
         emit('dispatch:push', `/tags/${encodeURIComponent(match[1])}`)
       }
       else {
@@ -185,10 +185,6 @@
   }
 
   CodeMirror.defineOption('hyperlink', true, (cm) => {
-    const addon = new HyperLink(cm)
-  })
-
-  CodeMirror.defineOption('link', true, (cm) => {
     const addon = new HyperLink(cm)
   })
 })
