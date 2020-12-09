@@ -1,90 +1,135 @@
 .cm-table-row-even { background-color: rgb(242, 242, 242); }
+.CodeMirror-activeline-background { background: transparent; }
 .CodeMirror-activeline .cm-table-row { background-color: rgb(230, 230, 230); }
 .cm-s-3024-day.CodeMirror .cm-table-row-even { background-color: rgb(238, 237, 237); }
+.cm-s-3024-day.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-3024-day.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(228, 228, 227); }
 .cm-s-3024-night.CodeMirror .cm-table-row-even { background-color: rgb(30, 24, 21); }
+.cm-s-3024-night.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-3024-night.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(50, 45, 42); }
 .cm-s-abcdef.CodeMirror .cm-table-row-even { background-color: rgb(36, 39, 37); }
+.cm-s-abcdef.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-abcdef.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(56, 63, 60); }
 .cm-s-ambiance.CodeMirror .cm-table-row-even { background-color: rgb(242, 242, 242); }
+.cm-s-ambiance.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-ambiance.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(230, 230, 230); }
 .cm-s-base16-dark.CodeMirror .cm-table-row-even { background-color: rgb(41, 41, 41); }
+.cm-s-base16-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-base16-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(62, 62, 62); }
 .cm-s-base16-light.CodeMirror .cm-table-row-even { background-color: rgb(234, 234, 234); }
+.cm-s-base16-light.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-base16-light.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(224, 224, 224); }
 .cm-s-bespin.CodeMirror .cm-table-row-even { background-color: rgb(52, 45, 40); }
+.cm-s-bespin.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-bespin.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(63, 57, 53); }
 .cm-s-blackboard.CodeMirror .cm-table-row-even { background-color: rgb(36, 39, 55); }
+.cm-s-blackboard.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-blackboard.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(59, 62, 76); }
 .cm-s-cobalt.CodeMirror .cm-table-row-even { background-color: rgb(26, 56, 83); }
+.cm-s-cobalt.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-cobalt.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(51, 78, 102); }
 .cm-s-colorforth.CodeMirror .cm-table-row-even { background-color: rgb(25, 25, 25); }
+.cm-s-colorforth.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-colorforth.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(50, 50, 50); }
 .cm-s-darcula.CodeMirror .cm-table-row-even { background-color: rgb(56, 57, 59); }
+.cm-s-darcula.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-darcula.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(68, 71, 74); }
 .cm-s-dracula.CodeMirror .cm-table-row-even { background-color: rgb(61, 63, 73); }
+.cm-s-dracula.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-dracula.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(82, 83, 92); }
 .cm-s-duotone-dark.CodeMirror .cm-table-row-even { background-color: rgb(49, 45, 60); }
+.cm-s-duotone-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-duotone-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(55, 52, 68); }
 .cm-s-duotone-light.CodeMirror .cm-table-row-even { background-color: rgb(246, 243, 238); }
+.cm-s-duotone-light.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-duotone-light.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(243, 238, 230); }
 .cm-s-erlang-dark.CodeMirror .cm-table-row-even { background-color: rgb(26, 56, 83); }
+.cm-s-erlang-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-erlang-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(51, 78, 102); }
 .cm-s-gruvbox-dark.CodeMirror .cm-table-row-even { background-color: rgb(55, 53, 51); }
+.cm-s-gruvbox-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-gruvbox-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(70, 67, 61); }
 .cm-s-hopscotch.CodeMirror .cm-table-row-even { background-color: rgb(66, 58, 65); }
+.cm-s-hopscotch.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-hopscotch.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(83, 75, 82); }
 .cm-s-isotope.CodeMirror .cm-table-row-even { background-color: rgb(22, 22, 22); }
+.cm-s-isotope.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-isotope.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(45, 45, 45); }
 .cm-s-lesser-dark.CodeMirror .cm-table-row-even { background-color: rgb(58, 58, 57); }
+.cm-s-lesser-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-lesser-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(77, 78, 77); }
 .cm-s-liquibyte.CodeMirror .cm-table-row-even { background-color: rgb(26, 26, 26); }
+.cm-s-liquibyte.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-liquibyte.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(51, 51, 51); }
 .cm-s-lucario.CodeMirror .cm-table-row-even { background-color: rgb(64, 81, 96); }
+.cm-s-lucario.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-lucario.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(84, 99, 112); }
 .cm-s-material.CodeMirror .cm-table-row-even { background-color: rgb(58, 69, 74); }
+.cm-s-material.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-material.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(77, 87, 92); }
 .cm-s-mbo.CodeMirror .cm-table-row-even { background-color: rgb(65, 65, 63); }
+.cm-s-mbo.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-mbo.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(86, 86, 82); }
 .cm-s-midnight.CodeMirror .cm-table-row-even { background-color: rgb(34, 46, 63); }
+.cm-s-midnight.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-midnight.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(54, 67, 85); }
 .cm-s-monokai.CodeMirror .cm-table-row-even { background-color: rgb(60, 61, 55); }
+.cm-s-monokai.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-monokai.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(81, 82, 76); }
 .cm-s-neo.CodeMirror .cm-table-row-even { background-color: rgb(245, 245, 245); }
+.cm-s-neo.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-neo.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(234, 235, 236); }
 .cm-s-night.CodeMirror .cm-table-row-even { background-color: rgb(34, 25, 53); }
+.cm-s-night.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-night.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(58, 50, 74); }
 .cm-s-oceanic-next.CodeMirror .cm-table-row-even { background-color: rgb(68, 83, 89); }
+.cm-s-oceanic-next.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-oceanic-next.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(88, 102, 106); }
 .cm-s-paraiso-dark.CodeMirror .cm-table-row-even { background-color: rgb(61, 45, 59); }
+.cm-s-paraiso-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-paraiso-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(75, 60, 72); }
 .cm-s-paraiso-light.CodeMirror .cm-table-row-even { background-color: rgb(223, 224, 211); }
+.cm-s-paraiso-light.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-paraiso-light.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(214, 215, 203); }
 .cm-s-pastel-on-dark.CodeMirror .cm-table-row-even { background-color: rgb(54, 51, 49); }
+.cm-s-pastel-on-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-pastel-on-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(64, 61, 60); }
 .cm-s-railscasts.CodeMirror .cm-table-row-even { background-color: rgb(63, 63, 62); }
+.cm-s-railscasts.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-railscasts.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(83, 83, 82); }
 .cm-s-rubyblue.CodeMirror .cm-table-row-even { background-color: rgb(41, 58, 73); }
+.cm-s-rubyblue.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-rubyblue.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(65, 80, 93); }
 .cm-s-seti.CodeMirror .cm-table-row-even { background-color: rgb(40, 42, 43); }
+.cm-s-seti.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-seti.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(58, 60, 61); }
 .cm-s-shadowfox.CodeMirror .cm-table-row-even { background-color: rgb(56, 56, 59); }
+.cm-s-shadowfox.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-shadowfox.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(69, 69, 73); }
 .cm-s-the-matrix.CodeMirror .cm-table-row-even { background-color: rgb(0, 26, 0); }
+.cm-s-the-matrix.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-the-matrix.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(0, 51, 0); }
 .cm-s-tomorrow-night-bright.CodeMirror .cm-table-row-even { background-color: rgb(23, 23, 23); }
+.cm-s-tomorrow-night-bright.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-tomorrow-night-bright.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(47, 47, 47); }
 .cm-s-tomorrow-night-eighties.CodeMirror .cm-table-row-even { background-color: rgb(20, 20, 20); }
+.cm-s-tomorrow-night-eighties.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-tomorrow-night-eighties.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(41, 41, 41); }
 .cm-s-twilight.CodeMirror .cm-table-row-even { background-color: rgb(43, 43, 43); }
+.cm-s-twilight.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-twilight.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(65, 65, 65); }
 .cm-s-vibrant-ink.CodeMirror .cm-table-row-even { background-color: rgb(26, 26, 26); }
+.cm-s-vibrant-ink.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-vibrant-ink.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(51, 51, 51); }
 .cm-s-xq-dark.CodeMirror .cm-table-row-even { background-color: rgb(34, 25, 53); }
+.cm-s-xq-dark.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-xq-dark.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(58, 50, 74); }
 .cm-s-yeti.CodeMirror .cm-table-row-even { background-color: rgb(235, 232, 230); }
+.cm-s-yeti.CodeMirror .CodeMirror-activeline-background { background: transparent; }
 .cm-s-yeti.CodeMirror .CodeMirror-activeline .cm-table-row { background-color: rgb(233, 231, 228); }
 .cm-s-solarized.cm-s-dark .cm-table-row-even { background-color: rgb(13, 54, 64); }
+.cm-s-solarized.cm-s-dark .CodeMirror-activeline-background { background: transparent; }
 .cm-s-solarized.cm-s-dark .CodeMirror-activeline .cm-table-row { background-color: rgb(26, 64, 73); }
 .cm-s-solarized.cm-s-light .cm-table-row-even { background-color: rgb(245, 240, 222); }
+.cm-s-solarized.cm-s-light .CodeMirror-activeline-background { background: transparent; }
 .cm-s-solarized.cm-s-light .CodeMirror-activeline .cm-table-row { background-color: rgb(238, 234, 217); }

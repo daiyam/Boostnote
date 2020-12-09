@@ -295,9 +295,11 @@ module.exports = function (grunt) {
 
       if (selector && selector.length > 0) {
         return `${selector} .cm-table-row-even { background-color: ${evenColor.rgb().string()}; }
+${selector} .CodeMirror-activeline-background { background: transparent; }
 ${selector} .CodeMirror-activeline .cm-table-row { background-color: ${activeColor.rgb().string()}; }`
       } else {
         return `.cm-table-row-even { background-color: ${evenColor.rgb().string()}; }
+.CodeMirror-activeline-background { background: transparent; }
 .CodeMirror-activeline .cm-table-row { background-color: ${activeColor.rgb().string()}; }`
       }
     }
