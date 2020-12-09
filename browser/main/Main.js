@@ -20,6 +20,7 @@ const path = require('path')
 const electron = require('electron')
 const { remote } = electron
 import { generateConsumption, generateReserve } from 'browser/main/lib/tea'
+import { locateTags } from 'browser/lib/location'
 
 class Main extends React.Component {
   constructor (props) {
@@ -40,6 +41,7 @@ class Main extends React.Component {
     this.generateConsumption = () => this.handleGenerateConsumption()
     this.generateReserve = () => this.handleGenerateReserve()
     this.toggleFullScreen = () => this.handleFullScreenButton()
+    this.pushNewRoute = this.handleNewRoute.bind(this)
   }
 
   getChildContext () {
@@ -170,12 +172,16 @@ class Main extends React.Component {
     eventEmitter.on('editor:fullscreen', this.toggleFullScreen)
     eventEmitter.on('editor:generate-consumption', this.generateConsumption)
     eventEmitter.on('editor:generate-reserve', this.generateReserve)
+
+    eventEmitter.on('dispatch:push', this.pushNewRoute)
   }
 
   componentWillUnmount () {
     eventEmitter.off('editor:fullscreen', this.toggleFullScreen)
     eventEmitter.off('editor:generate-consumption', this.generateConsumption)
     eventEmitter.off('editor:generate-reserve', this.generateReserve)
+
+    eventEmitter.off('dispatch:push', this.pushNewRoute)
   }
 
   handleGenerateConsumption() {
@@ -191,6 +197,14 @@ class Main extends React.Component {
     this.setState({
       isLeftSliderFocused: true
     })
+  }
+
+  handleNewRoute(event, args) {
+    const { history, location } = this.props
+
+    if(args.tags) {
+      locateTags(args.tags.join(' '), location, history)
+    }
   }
 
   handleRightSlideMouseDown (e) {

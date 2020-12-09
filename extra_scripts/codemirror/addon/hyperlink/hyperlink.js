@@ -69,26 +69,15 @@
       }
 
       if (className.includes('cm-link')) {
-        const link = `${el.textContent}:`
-        const term = `${el.textContent}`
+        const content = this.cm.getValue()
+        const value = el.textContent.substr(1, el.textContent.length - 2)
 
-        for(const el of document.getElementsByClassName('cm-link')) {
-          if(el.textContent === link) {
-            return this.getUrl(el.nextElementSibling)
-          }
-          else if(el.className.includes('cm-deflist-term') && el.textContent === term) {
-            const cmLine = el.parentElement.parentElement
-            const line = cmLine.previousElementSibling.className.includes('CodeMirror-gutter-wrapper') ? cmLine.parentElement : cmLine
-            const nextLine = line.nextElementSibling
-            const urlEl = nextLine.getElementsByClassName('cm-url')[0]
-
-            if(urlEl) {
-              return this.getUrl(urlEl)
-            }
-            else {
-              return null
-            }
-          }
+        let match
+        if((match = RegExp(`\\n\\[${value}\\]:\\s+(.*)\\s*`).exec(content))) {
+          return match[1]
+        }
+        else if((match = RegExp(`\\n\\[${value}\\]\\n\\s+~\\s+\\[[^\\]]*\\]\\(([^\\)]+)\\)`).exec(content))) {
+          return match[1]
         }
       }
 
@@ -126,8 +115,8 @@
       else if((match = /^:line:([0-9])/.exec(url))) {
         emit('line:jump', parseInt(match[1]))
       }
-      else if((match = /^:tag:([\w]+)$/.exec(url))) {
-        emit('dispatch:push', `/tags/${encodeURIComponent(match[1])}`)
+      else if((match = /^:tag:([^\s]+)$/.exec(url))) {
+        emit('dispatch:push', { tags: [match[1]] })
       }
       else {
         shell.openExternal(url)

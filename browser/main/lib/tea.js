@@ -19,11 +19,19 @@ const TEST_BREW_REGEX = /\s+Date\s+\|\s+Wat\s+\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew
 const TEST_MIX_REGEX = /\n\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[#?[\w\-]+\]/
 const TEST_REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\([\d\.]+(?:,\s+([\d\.]+)g?)?\)[ \t]*/
 
-function buildConsumptionContent(contexts) { // {{{
+function buildConsumptionContent(contexts, links) { // {{{
 	let content = `## Tea Consumption\n\n`
 
 	for (const context of contexts) {
 		content = buildConsumptionTable(content, context)
+	}
+
+	if(Object.keys(links).length !== 0) {
+		content += '\n\n\n\n'
+
+		for(const [alias, tag] of Object.entries(links)) {
+			content += `\n[${alias}]: :tag:${tag}`
+		}
 	}
 
 	return content
@@ -154,7 +162,7 @@ function buildConsumptionTable(content, { year, context: { nbRowHeaders, rows, s
 	return content
 } // }}}
 
-function buildReserveContent({ nbRowHeaders, headers, rows, max }) { // {{{
+function buildReserveContent({ nbRowHeaders, headers, rows, max, links }) { // {{{
 	let content = `## Tea Reserve\n\n\n`
 
 	headers.push({
@@ -253,7 +261,16 @@ function buildReserveContent({ nbRowHeaders, headers, rows, max }) { // {{{
 		content += '|\n'
 	}
 
-	content += '\n'
+	if(Object.keys(links).length !== 0) {
+		content += '\n\n\n\n\n'
+
+		for(const [alias, tag] of Object.entries(links)) {
+			content += `\n[${alias}]: :tag:${tag}`
+		}
+	}
+	else {
+		content += '\n'
+	}
 
 	return content
 } // }}}
@@ -273,6 +290,7 @@ function buildTableContext(noteMap, tagNoteMap, newSearch) { // {{{
 	const rows = []
 	const max = [0, 0, 0, 0]
 	const hashes = {}
+	const links = {}
 
 	let oldCells = ['', '', '', '']
 	let oldSearch = ['', '', '', '']
@@ -310,7 +328,7 @@ function buildTableContext(noteMap, tagNoteMap, newSearch) { // {{{
 
 			const tags = []
 
-			if (matchTags(search, tags, tagNoteMap)) {
+			if (matchTags(search, tags, tagNoteMap, links)) {
 				row.search = newSearch(tags)
 
 				searchs.push(row.search)
@@ -350,7 +368,8 @@ function buildTableContext(noteMap, tagNoteMap, newSearch) { // {{{
 		searchs,
 		max,
 		nbRowHeaders,
-		hashes
+		hashes,
+		links
 	}
 } // }}}
 
@@ -459,7 +478,7 @@ function generateConsumption(noteMap, tagNoteMap, dispatch) { // {{{
 		}
 	}
 
-	const content = buildConsumptionContent(contexts.sort(({ year: a }, { year: b }) => b - a))
+	const content = buildConsumptionContent(contexts.sort(({ year: a }, { year: b }) => b - a), defaultContext.links)
 
 	mainNote.content = content
 
@@ -697,26 +716,45 @@ function loadMixes(note) { // {{{
 	return mixes
 } // }}}
 
-function matchTags(cells, tags, tagNoteMap) { // {{{
+function matchTags(cells, tags, tagNoteMap, links) { // {{{
 	for(const cell of cells) {
+		const match = /\[(.*)\]/.exec(cell)
+		const value = match && match[1] || cell
+
 		if(cell.length === 0) {
 			// all
 		}
 		// country
-		else if(tagNoteMap.has(cell)) {
-			tags.push(cell)
+		else if(tagNoteMap.has(value)) {
+			tags.push(value)
+
+			if(match) {
+				links[value] = value
+			}
 		}
 		// style
-		else if(tagNoteMap.has(`\`${cell.toLowerCase()}`)) {
-			tags.push(`\`${cell.toLowerCase()}`)
+		else if(tagNoteMap.has(`\`${value.toLowerCase()}`)) {
+			tags.push(`\`${value.toLowerCase()}`)
+
+			if(match) {
+				links[value] = `\`${value.toLowerCase()}`
+			}
 		}
 		// shop
-		else if(tagNoteMap.has(`≈${cell}`)) {
-			tags.push(`≈${cell}`)
+		else if(tagNoteMap.has(`≈${value}`)) {
+			tags.push(`≈${value}`)
+
+			if(match) {
+				links[value] = `≈${value}`
+			}
 		}
 		// type
-		else if(tagNoteMap.has(cell.toLowerCase())) {
-			tags.push(cell.toLowerCase())
+		else if(tagNoteMap.has(value.toLowerCase())) {
+			tags.push(value.toLowerCase())
+
+			if(match) {
+				links[value] = value.toLowerCase()
+			}
 		}
 		else {
 			return false
