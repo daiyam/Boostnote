@@ -290,16 +290,15 @@ module.exports = function (grunt) {
     const parseCSS = require('css').parse
 
     function generateRule (selector, bgColor, fgColor) {
-      if (bgColor.isLight()) {
-        bgColor = bgColor.mix(fgColor, 0.05)
-      } else {
-        bgColor = bgColor.mix(fgColor, 0.1)
-      }
+      const evenColor = bgColor.isLight() ? bgColor.mix(fgColor, 0.05) : bgColor.mix(fgColor, 0.1)
+      const activeColor = bgColor.isLight() ? bgColor.mix(fgColor, 0.1) : bgColor.mix(fgColor, 0.2)
 
       if (selector && selector.length > 0) {
-        return `${selector} .cm-table-row-even { background-color: ${bgColor.rgb().string()}; }`
+        return `${selector} .cm-table-row-even { background-color: ${evenColor.rgb().string()}; }
+${selector} .CodeMirror-activeline .cm-table-row { background-color: ${activeColor.rgb().string()}; }`
       } else {
-        return `.cm-table-row-even { background-color: ${bgColor.rgb().string()}; }`
+        return `.cm-table-row-even { background-color: ${evenColor.rgb().string()}; }
+.CodeMirror-activeline .cm-table-row { background-color: ${activeColor.rgb().string()}; }`
       }
     }
 

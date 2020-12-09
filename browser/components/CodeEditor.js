@@ -240,6 +240,7 @@ export default class CodeEditor extends React.Component {
     this.editor = CodeMirror(this.refs.root, {
       rulers: buildCMRulers(rulers, enableRulers),
       value: this.props.value,
+      styleActiveLine: true,
       lineNumbers: this.props.displayLineNumbers,
       lineWrapping: true,
       theme: this.props.theme,
