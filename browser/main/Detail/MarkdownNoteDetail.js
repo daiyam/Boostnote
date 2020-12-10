@@ -30,7 +30,6 @@ import striptags from 'striptags'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import markdownToc from 'browser/lib/markdown-toc-generator'
 import { locateNote } from 'browser/lib/location'
-import { getConsumptions, updateMix, updateRemaining } from 'browser/main/lib/tea'
 
 class MarkdownNoteDetail extends React.Component {
   constructor (props) {
@@ -52,9 +51,6 @@ class MarkdownNoteDetail extends React.Component {
     this.generateToc = () => this.handleGenerateToc()
 
     this.refresh = () => this.handleRefresh()
-    this.showConsumption = () => this.handleShowConsumption()
-    this.updateMix = () => this.handleUpdateMix()
-    this.updateRemaining = () => this.handleUpdateRemaining()
   }
 
   focus () {
@@ -71,9 +67,6 @@ class MarkdownNoteDetail extends React.Component {
     ee.on('code:generate-toc', this.generateToc)
 
     ee.on('note:refresh', this.refresh)
-    ee.on('note:show-consumption', this.showConsumption)
-    ee.on('note:update-mix', this.updateMix)
-    ee.on('note:update-remaining', this.updateRemaining)
   }
 
   componentWillReceiveProps (nextProps) {
@@ -95,9 +88,6 @@ class MarkdownNoteDetail extends React.Component {
     ee.off('code:generate-toc', this.generateToc)
 
     ee.off('note:refresh', this.refresh)
-    ee.off('note:show-consumption', this.showConsumption)
-    ee.off('note:update-mix', this.updateMix)
-    ee.off('note:update-remaining', this.updateRemaining)
 
     if (this.saveQueue != null) this.saveNow()
   }
@@ -356,30 +346,6 @@ class MarkdownNoteDetail extends React.Component {
         this.refs.content.reload()
         if (this.refs.tags) this.refs.tags.reset()
       })
-  }
-
-  handleShowConsumption () {
-    const consumptions = getConsumptions(this.state.note)
-
-    alert(
-      Object.values(consumptions)
-      .sort(({date: a}, {date: b}) => a.substr(3, 2) === b.substr(3, 2) ? a.substr(0, 2) - b.substr(0, 2) : a.substr(3, 2) - b.substr(3, 2))
-      .map(({date, weight}) => `${date}: ${weight.toFixed(1)}g`).join('\n')
-    )
-  }
-
-  handleUpdateMix () {
-    updateMix(this.state.note, this.props.data.noteMap, this.props.dispatch)
-  }
-
-  handleUpdateRemaining () {
-    const note = updateRemaining(this.state.note)
-
-    if(note) {
-      this.refs.content.setValue(note.content)
-
-      this.updateNote(note)
-    }
   }
 
   renderEditor () {

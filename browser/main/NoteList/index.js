@@ -21,7 +21,6 @@ import i18n from 'browser/lib/i18n'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import context from 'browser/lib/context'
 import { locateNote } from 'browser/lib/location'
-import { isRemaining, notifyRemaining, updateRemaining } from 'browser/main/lib/tea'
 
 const { remote } = require('electron')
 const { dialog } = remote
@@ -90,7 +89,6 @@ class NoteList extends React.Component {
     this.restoreNote = this.restoreNote.bind(this)
     this.copyNoteLink = this.copyNoteLink.bind(this)
     this.navigate = this.navigate.bind(this)
-    this.showRemaining = () => this.handleShowRemaining()
 
     // TODO: not Selected noteKeys but SelectedNote(for reusing)
     this.state = {
@@ -115,7 +113,6 @@ class NoteList extends React.Component {
     ee.on('import:file', this.importFromFileHandler)
     ee.on('list:jump', this.jumpNoteByHash)
     ee.on('list:navigate', this.navigate)
-    ee.on('list:show-remaining', this.showRemaining)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -189,7 +186,6 @@ class NoteList extends React.Component {
     ee.off('list:isMarkdownNote', this.alertIfSnippetHandler)
     ee.off('import:file', this.importFromFileHandler)
     ee.off('list:jump', this.jumpNoteByHash)
-    ee.off('list:show-remaining', this.showRemaining)
   }
 
   componentDidUpdate(prevProps) {
@@ -243,19 +239,6 @@ class NoteList extends React.Component {
         }
       }
     }
-  }
-
-  handleShowRemaining() {
-    const { dispatch } = this.props
-
-    Promise
-      .all(
-        this.notes
-          .filter((note) => isRemaining(note))
-          .map((note) => updateRemaining(note, dispatch))
-      )
-      .then(() => ee.emit('note:refresh'))
-      .then(() => notifyRemaining(this.notes))
   }
 
   focusNote(selectedNoteKeys, noteKey) {

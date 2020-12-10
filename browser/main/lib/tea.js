@@ -4,16 +4,15 @@ import ee from 'browser/main/lib/eventEmitter'
 import moment from 'moment'
 
 const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
-const BREW_REGEX = /\n\|\s+(?:\d+\.)?(\d+\.\d+)\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g|\[(#[\w\-]+)\])/g
+const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g|\[(#[\w\-]+)\])/g
 const DEFLIST_LINK_REGEX = /\n\[([\w\-]+)\][ \t]*\n\t~[ \t]+\[[^\]]+\]\(:note:([\w\-]+)\)/g
-const FIRST_REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\((\d+\.\d+\.\d+)\)[ \t]*/
 const LINK_REGEX = /\n\[([^\]]+)\]:\s+:note:([\w\-]+)/g
 const MIX_BREW_REGEX = /\n\|\s+(?:\d+\.)?(\d+\.\d+)\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[(#?[\w\-]+)\]/g
 const MIX_DEF_BEGIN_REGEX = /\n\[(#?[\w\-]+)\][ \t]*\n\t~[ \t]+\-[ \t]+([\d\.]+)g[ \t]+\[([\w\-]+|#)\][ \t]*\n/g
 const MIX_DEF_LINE_REGEX = /^\n[ \t]{2,}\-[ \t]+([\d\.]+)g[ \t]+\[([\w\-]+)\][ \t]*\n/
 const MIX_RUN_REGEX = /\n\|\s+(\d+\.\d+)\s+\|\s+\|\s+\|\s+([\d\.]+)g\s+\|\s+\|\s+\|\s+\|\s+\|\s+\[([^\]\|]+)\]\s+\|/g
 const NAME_REGEX = /^#+[ \t]+(?:\[([^\]]+)\]|([^\n]+))/
-const REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\([\d\.]+(?:,\s+([\d\.]+)g?)?\)[ \t]*/g
+const REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\((\d+\.\d+\.\d+)(?:,\s+([\d\.]+)g?)?\)[ \t]*/g
 const REPORT_HEADER_REGEX = /\|\s+(\d+\.\d+\.\d+)\s+(?=\|)/g
 const TEST_BREW_REGEX = /\s+Date\s+\|\s+Wat\s+\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew\s+\|\s+Time\s+\|\s+Temptr\s+\|\s+Rating\s+\|\s+Tasting Notes\s+\|/
 const TEST_MIX_REGEX = /\n\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[#?[\w\-]+\]/
@@ -162,15 +161,8 @@ function buildConsumptionTable(content, { year, context: { nbRowHeaders, rows, s
 	return content
 } // }}}
 
-function buildReserveContent({ nbRowHeaders, headers, rows, max, links }) { // {{{
+function buildReserveContent({ nbRowHeaders, headers, rows, max, links, current }) { // {{{
 	let content = `## Tea Reserve\n\n\n`
-
-	headers.push({
-		name: moment(new Date()).format('DD.MM.YY'),
-		date: new Date()
-	})
-
-	headers.sort(({ date: a }, { date: b }) => a - b)
 
 	const maxValues = headers.length
 	const headersLength = max.reduce((acc, val) => acc + (val ? val + 2 : 0), 0)
@@ -358,9 +350,17 @@ function buildTableContext(noteMap, tagNoteMap, newSearch) { // {{{
 		max[3] += 3
 	}
 	else if(max[2]) {
-		--nbRowHeaders
+		nbRowHeaders = 3
 
 		max[2] += 2
+	}
+	else if(max[1]) {
+		nbRowHeaders = 2
+
+		max[1] += 1
+	}
+	else {
+		nbRowHeaders = 1
 	}
 
 	return {
@@ -507,15 +507,21 @@ function generateReserve(noteMap, tagNoteMap, dispatch) { // {{{
 
 	const context = buildTableContext(noteMap, tagNoteMap, (tags) => ({ tags, remaining: {} }))
 
-	restoreReserveValues(mainNote.content, context)
+	const current = moment().startOf('day')
 
-	const today = moment(new Date()).format('DD.MM.YY')
+	context.current = {
+		name: current.format('DD.MM.YY'),
+		date: current.toDate()
+	}
+
+	restoreReserveValues(mainNote.content, context)
 
 	for (const [key, note] of noteMap) {
 		if (isRemaining(note)) {
-			updateRemaining(note, dispatch)
+			updateRemaining(note, context.headers, dispatch)
 
 			const rem = getRemaining(note)
+			const rems = {}
 
 			for (const search of context.searchs) {
 				let match = true
@@ -529,13 +535,22 @@ function generateReserve(noteMap, tagNoteMap, dispatch) { // {{{
 				}
 
 				if (match) {
-					for(const { name, date } of context.headers) {
-						if(typeof search.remaining[name] !== 'string') {
-							search.remaining[name] = (search.remaining[name] || 0) + getRemainingAt(note, date, name)
-						}
+					if(typeof search.remaining[context.current.name] !== 'number') {
+						search.remaining[context.current.name] = 0
 					}
 
-					search.remaining[today] = (search.remaining[today] || 0) + rem
+					for(const { name, date } of context.headers) {
+						if(name === context.current.name) {
+							search.remaining[name] += rem
+						}
+						else if(typeof search.remaining[name] !== 'string') {
+							if(!rems[date]) {
+								rems[date] = getRemainingAt(note, date, name)
+							}
+
+							search.remaining[name] = (search.remaining[name] || 0) + rems[date]
+						}
+					}
 				}
 			}
 		}
@@ -556,15 +571,15 @@ function generateReserve(noteMap, tagNoteMap, dispatch) { // {{{
 		.then(() => ee.emit('note:refresh'))
 } // }}}
 
-function getConsumptions(note) { // {{{
+function getConsumptions(note, datePart = 2) { // {{{
 	const consumptions = {}
 
 	let mixes = null
 
 	let match, weight
 	while ((match = BREW_REGEX.exec(note.content))) {
-		if (match[2]) {
-			weight = parseFloat(match[2])
+		if (match[3]) {
+			weight = parseFloat(match[3])
 		}
 		else {
 			// hybrid mix
@@ -572,7 +587,7 @@ function getConsumptions(note) { // {{{
 				mixes = loadMixes(note)
 			}
 
-			const mix = mixes[match[3]]
+			const mix = mixes[match[4]]
 			if (mix) {
 				weight = mix['#']
 			}
@@ -581,14 +596,13 @@ function getConsumptions(note) { // {{{
 			}
 		}
 
-		if (consumptions[match[1]]) {
-			consumptions[match[1]].weight += weight
+		if (consumptions[match[datePart]]) {
+			consumptions[match[datePart]].weight += weight
 		}
 		else {
-			if (match[2]) {
-			}
-			consumptions[match[1]] = {
-				date: match[1],
+			consumptions[match[datePart]] = {
+				raw: match[datePart],
+				date: match[datePart],
 				weight
 			}
 		}
@@ -598,7 +612,11 @@ function getConsumptions(note) { // {{{
 } // }}}
 
 function getRemaining(note) { // {{{
-	let last = null
+	if(isFinished(note)) {
+		return 0
+	}
+
+	let last = 0
 
 	let match
 	while ((match = REM_REGEX.exec(note.content))) {
@@ -609,46 +627,25 @@ function getRemaining(note) { // {{{
 } // }}}
 
 function getRemainingAt(note, targetDate, targetStr) { // {{{
-	let match = FIRST_REM_REGEX.exec(note.content)
-	if(!match) {
-		return 0
+	let match = RegExp(`\\n\\t~\\s+([\\d\\.]+)g\\s+\\(${targetStr}`).exec(note.content)
+	if(match) {
+		return parseFloat(match[1])
 	}
+	else {
+		let last = 0
 
-	const initial = parseFloat(match[1])
-	if(match[2] === targetStr) {
-		return initial
-	}
+		while ((match = REM_REGEX.exec(note.content))) {
+			if(moment(match[2], 'DD.MM.YY') > targetDate) {
+				REM_REGEX.lastIndex = 0
 
-	if(moment(match[2], 'DD.MM.YY') > targetDate) {
-		return 0
-	}
-
-	let mixes = null
-	let consumption = 0
-
-	while ((match = BREW_REGEX.exec(note.content))) {
-		if(moment(match[1], 'MM.YY') >= targetDate) {
-			BREW_REGEX.lastIndex = 0
-			break
-		}
-
-		if (match[2]) {
-			consumption += parseFloat(match[2])
-		}
-		else {
-			// hybrid mix
-			if (mixes === null) {
-				mixes = loadMixes(note)
+				return last
 			}
 
-			const mix = mixes[match[3]]
-			if (mix) {
-				consumption += mix['#']
-			}
+			last = parseFloat(match[1])
 		}
-	}
 
-	return Math.max(initial - consumption, 0)
+		return last
+	}
 } // }}}
 
 function getTag(rem) { // {{{
@@ -672,12 +669,16 @@ function getTag(rem) { // {{{
 	}
 } // }}}
 
+function isFinished(note) { // {{{
+	return !note.isTrashed && note.tags.includes('⃠⃠⃠')
+} // }}}
+
 function isMix(note) { // {{{
 	return !note.isTrashed && TEST_MIX_REGEX.test(note.content)
 } // }}}
 
 function isRemaining(note) { // {{{
-	return !note.isTrashed && !note.tags.includes('⃠⃠⃠') && TEST_REM_REGEX.test(note.content)
+	return !note.isTrashed && TEST_REM_REGEX.test(note.content)
 } // }}}
 
 function loadMixes(note) { // {{{
@@ -764,30 +765,6 @@ function matchTags(cells, tags, tagNoteMap, links) { // {{{
 	return true
 } // }}}
 
-function notifyRemaining(notes) { // {{{
-	let available = 0
-	let unknown = 0
-
-	const rem = notes
-		.filter((note) => {
-			if (note.tags.includes('⃠⃠⃠')) {
-				return false
-			}
-			else if (!TEST_REM_REGEX.test(note.content)) {
-				++unknown
-				return false
-			}
-			else {
-				++available
-				return true
-			}
-		})
-		.map((note) => getRemaining(note))
-		.reduce((acc, value) => acc + value, 0)
-
-	alert(`Remaining: ${rem.toFixed(1)}g / ${available}${unknown ? `  (${unknown})` : ``}`)
-} // }}}
-
 function replaceRowspans(cells, olds, nbRowHeaders = 4) { // {{{
 	const row = []
 
@@ -806,7 +783,7 @@ function replaceRowspans(cells, olds, nbRowHeaders = 4) { // {{{
 function restoreReserveValues(content, context) { // {{{
 	const lines = content.split(/\n/)
 	const last = lines.length - 1
-	const today = moment(new Date()).format('DD.MM.YY')
+	const today = moment().startOf('day')
 	const headers = {}
 
 	context.headers = []
@@ -815,17 +792,29 @@ function restoreReserveValues(content, context) { // {{{
 	let i = -1
 
 	while ((match = REPORT_HEADER_REGEX.exec(lines[3]))) {
-		if(match[1] !== today) {
+		const date = moment(match[1], 'DD.MM.YY')
+
+		if(date < today) {
 			context.headers.push({
 				name: match[1],
-				date: moment(match[1], 'DD.MM.YY').toDate()
+				date: date.toDate()
 			})
+		}
+		else if(date > today) {
+			context.current = {
+				name: match[1],
+				date: date.toDate()
+			}
 		}
 
 		headers[match[1]] = ++i
 	}
 
-	const nbRowHeaders = /\|{2,}/.exec(lines[3])[0].length
+	context.headers.push(context.current)
+
+	context.headers.sort(({ date: a }, { date: b }) => a - b)
+
+	const nbRowHeaders = (match = /\|{2,}/.exec(lines[3])) ? match[0].length : 1
 
 	let oldSearch = ['', '', '', '']
 
@@ -971,58 +960,96 @@ function updateMix(note, noteMap, dispatch) { // {{{
 	}
 } // }}}
 
-function updateRemaining(note, dispatch) { // {{{
-	if (note.tags.includes('⃠⃠⃠')) {
-		return null
+function updateRemaining(note, steps, dispatch) { // {{{
+	if(note.tags.includes('⃠⃠⃠') && /~\s+0g\s+\(/.test(note.content)) {
+		return
 	}
 
-	let initial = null
-	let last = null
-	let index = -1
+	const raws = Object.values(getConsumptions(note, 1)).map((o) => (o.date = moment(o.date, o.date.length === 5 ? 'MM.YY' : 'DD.MM.YY').toDate(), o)).sort(({ date: a }, { date: b }) => a - b)
 
-	let match
-	while ((match = REM_REGEX.exec(note.content))) {
-		if (initial === null) {
-			initial = parseFloat(match[1])
+	if(raws.length) {
+		const initial = {}
+		let lastIndex = -1
+
+		let match
+		while ((match = REM_REGEX.exec(note.content))) {
+			if(!initial.index) {
+				initial.index = match.index
+				initial.weight = parseFloat(match[1])
+				initial.date = moment(match[2], 'DD.MM.YY')
+			}
+
+			lastIndex = match.index + match[0].length
 		}
 
-		index = match.index + match[0].length
-		last = parseFloat(match[1])
-	}
+		const consumptions = []
 
-	let mixes = null
-
-	if (initial != null) {
 		let consumption = 0
-		while ((match = BREW_REGEX.exec(note.content))) {
-			if (match[2]) {
-				consumption += parseFloat(match[2])
-			}
-			else {
-				// hybrid mix
-				if (mixes === null) {
-					mixes = loadMixes(note)
-				}
+		let step = 0
 
-				const mix = mixes[match[3]]
-				if (mix) {
-					consumption += mix['#']
-				}
+		if(initial.date > raws[0].date) {
+			initial.date = moment(raws[0].date).startOf('month')
+		}
+
+		while(initial.date >= steps[step].date) {
+			++step
+		}
+
+		const firstStep = step
+
+		for(const raw of raws) {
+			while(raw.date >= steps[step].date) {
+				consumptions[step] = consumption
+
+				++step
+			}
+
+			consumption += raw.weight
+		}
+
+		const lastStep = step
+		const lastBrew = raws[raws.length - 1]
+		const lastDate = lastBrew.raw.length === 5 ? moment(lastBrew.date).endOf('month') : moment(lastBrew.date).add(1, 'day')
+
+		let content = ''
+
+		if(note.tags.includes('⃠⃠⃠')) {
+			const total = raws.reduce((acc, val) => acc + val.weight, 0)
+
+			content += `\n\t~ ${total.toFixed(1)}g (${initial.date.format('DD.MM.YY')})`
+
+			for(let i = firstStep; i < lastStep; ++i) {
+				content += `\n\t~ ${(total - consumptions[i]).toFixed(1)}g (${moment(steps[i].date).format('DD.MM.YY')}, ${consumptions[i] && consumptions[i].toFixed(1) || 0}g)`
+			}
+
+			content += `\n\t~ 0g (${lastDate.format('DD.MM.YY')}, ${total.toFixed(1)}g)`
+		}
+		else {
+			const total = consumption > initial.weight ? consumption + 2 : initial.weight
+
+			content += `\n\t~ ${total.toFixed(1)}g (${initial.date.format('DD.MM.YY')})`
+
+			for(let i = firstStep; i < lastStep; ++i) {
+				content += `\n\t~ ${(total - consumptions[i]).toFixed(1)}g (${moment(steps[i].date).format('DD.MM.YY')}, ${consumptions[i] && consumptions[i].toFixed(1) || 0}g)`
+			}
+
+			const rem = total - consumption
+
+			content += `\n\t~ ${(rem).toFixed(1)}g (${lastDate.format('DD.MM.YY')}, ${consumption.toFixed(1)}g)`
+
+			const tag = getTag(rem)
+			const tagIndex = note.tags.indexOf(tag)
+			if(tagIndex === -1) {
+				note.tags.splice(tagIndex, 1, tag)
 			}
 		}
 
-		const rem = Math.max(initial - consumption, 0)
+		if(content.length) {
+			content = note.content.slice(0, initial.index) + content + note.content.slice(lastIndex)
 
-		if (Math.abs(last - rem) > 1) {
-			note.tags = note.tags.filter((tag) => !tag.startsWith('⚖'))
+			if (sha256(note.content) !== sha256(content)) {
+				note.content = content
 
-			note.tags.push(getTag(rem))
-
-			const content = note.content.slice(0, index) + `\n\t~ ${rem.toFixed(1)}g (${moment(new Date()).format('DD.MM.YY')}, ${new Intl.NumberFormat('en-US').format(consumption)}g)` + note.content.slice(index)
-
-			note.content = content
-
-			if (dispatch) {
 				dataApi.updateNote(note.storage, note.key, note).then((note) => {
 					dispatch({
 						type: 'UPDATE_NOTE',
@@ -1030,21 +1057,11 @@ function updateRemaining(note, dispatch) { // {{{
 					})
 				})
 			}
-			else {
-				return note
-			}
 		}
 	}
-
-	return null
 } // }}}
 
 export {
 	generateConsumption,
-	generateReserve,
-	getConsumptions,
-	isRemaining,
-	notifyRemaining,
-	updateMix,
-	updateRemaining
+	generateReserve
 }
