@@ -18,17 +18,13 @@ const TEST_BREW_REGEX = /\s+Date\s+\|\s+Wat\s+\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew
 const TEST_MIX_REGEX = /\n\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[#?[\w\-]+\]/
 const TEST_REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\([\d\.]+(?:,\s+([\d\.]+)g?)?\)[ \t]*/
 
-function buildConsumptionContent(contexts, links) { // {{{
-	let content = `## Tea Consumption\n\n`
+function buildConsumptionContent(year, context) { // {{{
+	let content = buildConsumptionTable(`## Tea Consumption 20${year}\n\n\n\n`, year, context)
 
-	for (const context of contexts) {
-		content = buildConsumptionTable(content, context)
-	}
-
-	if(Object.keys(links).length !== 0) {
+	if(Object.keys(context.links).length !== 0) {
 		content += '\n\n\n\n'
 
-		for(const [alias, tag] of Object.entries(links)) {
+		for(const [alias, tag] of Object.entries(context.links)) {
 			content += `\n[${alias}]: :tag:${tag}`
 		}
 	}
@@ -36,7 +32,7 @@ function buildConsumptionContent(contexts, links) { // {{{
 	return content
 } // }}}
 
-function buildConsumptionTable(content, { year, context: { nbRowHeaders, rows, searchs, max } }) { // {{{
+function buildConsumptionTable(content, year, { nbRowHeaders, rows, searchs, max }) { // {{{
 	const headers = searchs
 		.map(({ consumptions }) => Object.keys(consumptions))
 		.reduce((val, acc) => [...val, ...acc], [])
@@ -44,8 +40,6 @@ function buildConsumptionTable(content, { year, context: { nbRowHeaders, rows, s
 		.sort((a, b) => a.substr(3, 2) === b.substr(3, 2) ? a.substr(0, 2) - b.substr(0, 2) : a.substr(3, 2) - b.substr(3, 2))
 
 	const headersLength = max.reduce((acc, val) => acc + (val ? val + 2 : 0), 0)
-
-	content += `\n## 20${year}\n\n\n`
 
 	content += `|${' '.repeat(headersLength)}${'|'.repeat(nbRowHeaders - 1)}`
 
@@ -373,40 +367,6 @@ function buildTableContext(noteMap, tagNoteMap, newSearch) { // {{{
 	}
 } // }}}
 
-function duplicateConsumptionContext(context) { // {{{
-	const copy = {
-		nbRowHeaders: context.nbRowHeaders,
-		max: [...context.max],
-		rows: [],
-		searchs: []
-	}
-
-	for (const row of context.rows) {
-		if(row.type) {
-			copy.rows.push({
-				line: row.line,
-				type: row.type,
-			})
-		}
-		else {
-			const search = row.search ? {
-				tags: row.search.tags,
-				consumptions: {}
-			} : null
-
-			copy.rows.push({
-				line: row.line,
-				cells: row.cells,
-				search
-			})
-
-			search && copy.searchs.push(search)
-		}
-	}
-
-	return copy
-} // }}}
-
 function findNote(title, noteMap) { // {{{
 	for (const [key, note] of noteMap) {
 		if (!note.isTrashed && note.title === title) {
@@ -417,28 +377,27 @@ function findNote(title, noteMap) { // {{{
 	return null
 } // }}}
 
-function generateConsumption(noteMap, tagNoteMap, dispatch) { // {{{
+function generateCurrentConsumption(noteMap, tagNoteMap, dispatch) { // {{{
 	for (const [key, note] of noteMap) {
 		if (isMix(note)) {
 			updateMix(note, noteMap, dispatch)
 		}
 	}
 
-	const mainNote = findNote('Tea Consumption', noteMap)
+	const year = moment().format('YY')
+
+	const mainNote = findNote(`Tea Consumption 20${year}`, noteMap)
 	if(!mainNote) {
 		return alert('No consumption note')
 	}
 
-	const defaultContext = buildTableContext(noteMap, tagNoteMap, (tags) => ({ tags, consumptions: {} }))
-
-	const contexts = []
-	const byYear = {}
+	const context = buildTableContext(noteMap, tagNoteMap, (tags) => ({ tags, consumptions: {} }))
 
 	for (const [key, note] of noteMap) {
 		if (TEST_BREW_REGEX.test(note.content)) {
 			const consumptions = getConsumptions(note)
 
-			for (const [index, search] of defaultContext.searchs.entries()) {
+			for (const [index, search] of context.searchs.entries()) {
 				let match = true
 
 				for (const tag of search.tags) {
@@ -451,26 +410,15 @@ function generateConsumption(noteMap, tagNoteMap, dispatch) { // {{{
 
 				if (match) {
 					for (const date in consumptions) {
-						const year = date.substr(3, 2)
+						if(date.substr(3, 2) === year) {
+							const search = context.searchs[index]
 
-						if (!byYear[year]) {
-							const context = duplicateConsumptionContext(defaultContext)
-
-							contexts.push({
-								year,
-								context
-							})
-
-							byYear[year] = context
-						}
-
-						const search = byYear[year].searchs[index]
-
-						if (search.consumptions[date]) {
-							search.consumptions[date].weight += consumptions[date].weight
-						}
-						else {
-							search.consumptions[date] = Object.assign({}, consumptions[date])
+							if (search.consumptions[date]) {
+								search.consumptions[date].weight += consumptions[date].weight
+							}
+							else {
+								search.consumptions[date] = Object.assign({}, consumptions[date])
+							}
 						}
 					}
 				}
@@ -478,7 +426,71 @@ function generateConsumption(noteMap, tagNoteMap, dispatch) { // {{{
 		}
 	}
 
-	const content = buildConsumptionContent(contexts.sort(({ year: a }, { year: b }) => b - a), defaultContext.links)
+	const content = buildConsumptionContent(year, context)
+
+	mainNote.content = content
+
+	dataApi
+		.updateNote(mainNote.storage, mainNote.key, mainNote)
+		.then((note) => {
+			dispatch({
+				type: 'UPDATE_NOTE',
+				note
+			})
+		})
+		.then(() => ee.emit('note:refresh'))
+} // }}}
+
+function generateSelectedConsumption(mainNote, noteMap, tagNoteMap, dispatch) { // {{{
+	let match = /Tea Consumption\s+20(\d\d)/.exec(mainNote.title)
+	if(!match) {
+		return alert('Not a consumption note')
+	}
+
+	const year = match[1]
+
+	for (const [key, note] of noteMap) {
+		if (isMix(note)) {
+			updateMix(note, noteMap, dispatch)
+		}
+	}
+
+	const context = buildTableContext(noteMap, tagNoteMap, (tags) => ({ tags, consumptions: {} }))
+
+	for (const [key, note] of noteMap) {
+		if (TEST_BREW_REGEX.test(note.content)) {
+			const consumptions = getConsumptions(note)
+
+			for (const [index, search] of context.searchs.entries()) {
+				let match = true
+
+				for (const tag of search.tags) {
+					if (!note.tags.includes(tag)) {
+						match = false
+
+						break
+					}
+				}
+
+				if (match) {
+					for (const date in consumptions) {
+						if(date.substr(3, 2) === year) {
+							const search = context.searchs[index]
+
+							if (search.consumptions[date]) {
+								search.consumptions[date].weight += consumptions[date].weight
+							}
+							else {
+								search.consumptions[date] = Object.assign({}, consumptions[date])
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	const content = buildConsumptionContent(year, context)
 
 	mainNote.content = content
 
@@ -1062,6 +1074,7 @@ function updateRemaining(note, steps, dispatch) { // {{{
 } // }}}
 
 export {
-	generateConsumption,
+	generateCurrentConsumption,
+	generateSelectedConsumption,
 	generateReserve
 }

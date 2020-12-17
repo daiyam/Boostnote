@@ -19,7 +19,7 @@ import applyShortcuts from 'browser/main/lib/shortcutManager'
 const path = require('path')
 const electron = require('electron')
 const { remote } = electron
-import { generateConsumption, generateReserve } from 'browser/main/lib/tea'
+import { generateCurrentConsumption, generateSelectedConsumption, generateReserve } from 'browser/main/lib/tea'
 import { locateTags } from 'browser/lib/location'
 
 class Main extends React.Component {
@@ -38,8 +38,9 @@ class Main extends React.Component {
       mainBodyWidth: 0
     }
 
-    this.generateConsumption = () => this.handleGenerateConsumption()
-    this.generateReserve = () => this.handleGenerateReserve()
+    this.generateCurrentConsumption = () => this.handleCurrentConsumption()
+    this.generateSelectedConsumption = () => this.handleSelectedConsumption()
+    this.generateReserve = () => this.handleReserve()
     this.toggleFullScreen = () => this.handleFullScreenButton()
     this.pushNewRoute = this.handleNewRoute.bind(this)
   }
@@ -170,7 +171,8 @@ class Main extends React.Component {
     delete CodeMirror.keyMap.emacs['Ctrl-V']
 
     eventEmitter.on('editor:fullscreen', this.toggleFullScreen)
-    eventEmitter.on('editor:generate-consumption', this.generateConsumption)
+    eventEmitter.on('editor:generate-current-consumption', this.generateCurrentConsumption)
+    eventEmitter.on('editor:generate-selected-consumption', this.generateSelectedConsumption)
     eventEmitter.on('editor:generate-reserve', this.generateReserve)
 
     eventEmitter.on('dispatch:push', this.pushNewRoute)
@@ -178,17 +180,25 @@ class Main extends React.Component {
 
   componentWillUnmount () {
     eventEmitter.off('editor:fullscreen', this.toggleFullScreen)
-    eventEmitter.off('editor:generate-consumption', this.generateConsumption)
+    eventEmitter.off('editor:generate-current-consumption', this.generateCurrentConsumption)
+    eventEmitter.off('editor:generate-selected-consumption', this.generateSelectedConsumption)
     eventEmitter.off('editor:generate-reserve', this.generateReserve)
 
     eventEmitter.off('dispatch:push', this.pushNewRoute)
   }
 
-  handleGenerateConsumption() {
-    generateConsumption(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
+  handleCurrentConsumption() {
+    generateCurrentConsumption(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
   }
 
-  handleGenerateReserve() {
+  handleSelectedConsumption() {
+    const note = this.props.data.noteMap.get(this.props.location.query.key)
+    if(note) {
+      generateSelectedConsumption(note, this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
+    }
+  }
+
+  handleReserve() {
     generateReserve(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
   }
 
