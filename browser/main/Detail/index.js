@@ -10,6 +10,7 @@ import StatusBar from '../StatusBar'
 import i18n from 'browser/lib/i18n'
 import debounceRender from 'react-debounce-render'
 import searchFromNotes from 'browser/lib/search'
+import { TagQuery } from 'browser/main/lib/TagQuery'
 
 const OSX = global.process.platform === 'darwin'
 
@@ -49,9 +50,8 @@ class Detail extends React.Component {
         notes = notes.filter(note => !note.isTrashed)
       }
 
-      if (location.pathname.match(/\/tags/)) {
-        const tags = params.tagname.split(' ')
-        notes = notes.filter(note => tags.every(tag => note.tags.includes(tag)))
+      if (TagQuery.isTagQuery(location.pathname)) {
+		notes = TagQuery.listMatchingNotes(location.pathname, notes)
       }
 
       if (typeof location.query.search !== 'undefined' && location.query.search !== '') {

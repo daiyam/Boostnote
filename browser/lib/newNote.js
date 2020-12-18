@@ -2,12 +2,10 @@ import { hashHistory } from 'react-router'
 import dataApi from 'browser/main/lib/dataApi'
 import ee from 'browser/main/lib/eventEmitter'
 import { locateNote } from 'browser/lib/location'
+import { TagQuery } from 'browser/main/lib/TagQuery'
 
 export function createMarkdownNote (storage, folder, dispatch, location, params, config) {
-  let tags = []
-  if (config.ui.tagNewNoteWithFilteringTags && location.pathname.match(/\/tags/)) {
-    tags = params.tagname.split(' ')
-  }
+  const tags = config.ui.tagNewNoteWithFilteringTags ? TagQuery.listPositiveTags(location.pathname) : []
 
   return dataApi
     .createNote(storage, {
@@ -32,10 +30,7 @@ export function createMarkdownNote (storage, folder, dispatch, location, params,
 }
 
 export function createSnippetNote (storage, folder, dispatch, location, params, config) {
-  let tags = []
-  if (config.ui.tagNewNoteWithFilteringTags && location.pathname.match(/\/tags/)) {
-    tags = params.tagname.split(' ')
-  }
+  const tags = config.ui.tagNewNoteWithFilteringTags ? TagQuery.listPositiveTags(location.pathname) : []
 
   return dataApi
     .createNote(storage, {

@@ -8,7 +8,7 @@ import i18n from 'browser/lib/i18n'
 import ee from 'browser/main/lib/eventEmitter'
 import { isEmpty } from 'lodash'
 import electron from 'electron'
-import { locateTags } from 'browser/lib/location'
+import { TagQuery } from 'browser/main/lib/TagQuery'
 
 const { remote } = electron
 const { dialog } = remote
@@ -136,15 +136,13 @@ class RenameTagModal extends React.Component {
         })
       })
       .then(() => {
-        if (location.pathname.match('/tags')) {
-          const tags = params.tagname.split(' ')
-          const index = tags.indexOf(tag)
-          if (index !== -1) {
-            tags[index] = updatedTag
+		if (TagQuery.isTagQuery(location.pathname)) {
+			const query = new TagQuery(location.pathname)
 
-            locateTags(tags.join(' '), location, router)
-          }
-        }
+			query.renameTag(tag, updatedTag)
+
+			query.navigate(location, router)
+		}
 
         ee.emit('sidebar:rename-tag', { tag, updatedTag })
 

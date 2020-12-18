@@ -10,11 +10,6 @@ require('./lib/ipcClient')
 require('../lib/customMeta')
 import i18n from 'browser/lib/i18n'
 
-const electron = require('electron')
-
-const { remote, ipcRenderer } = electron
-const { dialog } = remote
-
 document.addEventListener('drop', function (e) {
   e.preventDefault()
   e.stopPropagation()
@@ -79,15 +74,11 @@ document.addEventListener('click', function (e) {
 const el = document.getElementById('content')
 const history = syncHistoryWithStore(hashHistory, store)
 
-function notify (...args) {
-  return new window.Notification(...args)
-}
-
 ReactDOM.render((
   <Provider store={store}>
     <Router history={history}>
       <Route path='/' component={Main}>
-        <IndexRedirect to='/home' />
+        <IndexRedirect to='/alltags' />
         <Route path='home' />
         <Route path='starred' />
         <Route path='trashed' />

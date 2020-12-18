@@ -20,7 +20,7 @@ const path = require('path')
 const electron = require('electron')
 const { remote } = electron
 import { generateCurrentConsumption, generateSelectedConsumption, generateReserve } from 'browser/main/lib/tea'
-import { locateTags } from 'browser/lib/location'
+import { TagQuery } from 'browser/main/lib/TagQuery'
 
 class Main extends React.Component {
   constructor (props) {
@@ -213,7 +213,7 @@ class Main extends React.Component {
     const { history, location } = this.props
 
     if(args.tags) {
-      locateTags(args.tags.join(' '), location, history)
+	   TagQuery.navigate(args.tags, location, history)
     }
   }
 

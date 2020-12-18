@@ -5,16 +5,15 @@ root = true
 
 # Space indentation
 [*]
-indent_style = space
-indent_size = 2
+indent_style = tab
+tab_width = 4
+end_of_line = lf
+charset = utf-8
 trim_trailing_whitespace = true
+insert_final_newline = true
 
 # The indent size used in the `package.json` file cannot be changed
 # https://github.com/npm/npm/pull/3180#issuecomment-16336516
 [{*.yml,*.yaml,package.json}]
 indent_style = space
 indent_size = 2
-
-[browser/main/lib/tea.js]
-indent_style = tab
-indent_size = 4
