@@ -97,6 +97,10 @@ class MutableSet {
     return result
   }
 
+  reduce (cb, initialValue) {
+    return this.map(val => val).reduce(cb, initialValue)
+  }
+
   some (...args) {
     return this.toJS().some(...args)
   }

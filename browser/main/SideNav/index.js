@@ -260,9 +260,9 @@ class SideNav extends React.Component {
 			const id = location.query.storage.substr(1)
 
 			if (location.query.storage[0] === 's') {
-				noteMap = noteMap.filter(note => note.storage === id)
+				noteMap = noteMap.filter(note => !note.isTrashed && note.storage === id)
 			} else {
-				noteMap = noteMap.filter(note => note.folder === id)
+				noteMap = noteMap.filter(note => !note.isTrashed && note.folder === id)
 			}
 
 			tagList = []
@@ -286,7 +286,7 @@ class SideNav extends React.Component {
 		}
 		else {
 			tagList = data.tagNoteMap.map(
-				(tag, name) => ({ name, size: tag.size, related: relatedTags.has(name) })
+				(tag, name) => ({ name, size: tag.reduce((acc, note) => acc + (noteMap.get(note).isTrashed ? 0 : 1), 0), related: relatedTags.has(name) })
 			).filter(
 				tag => tag.size > 0
 			)
@@ -297,7 +297,7 @@ class SideNav extends React.Component {
 		tagList = _.sortBy(tagList, ['name'])
 
 		if (config.ui.enableLiveNoteCounts && !query.isEmpty()) {
-			const notesTags = noteMap.map(note => note.tags)
+			const notesTags = noteMap.map(note => !note.isTrashed && note.tags || [])
 
 			tagList = tagList.map(tag => {
 				tag.size = notesTags.filter(tags => tags.includes(tag.name) && query.isMatchedBy(tags)).length

@@ -105,7 +105,7 @@ export class TagQuery {
 		const relatedTags = new Set()
 
 		noteMap
-			.filter((note) => this.isMatchedBy(note.tags))
+			.filter((note) => !note.isTrashed && this.isMatchedBy(note.tags))
 			.forEach((note) => note.tags.map(tag => relatedTags.add(tag)))
 
 		return relatedTags
