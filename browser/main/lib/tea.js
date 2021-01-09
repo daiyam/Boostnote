@@ -3,7 +3,9 @@ import dataApi from 'browser/main/lib/dataApi'
 import ee from 'browser/main/lib/eventEmitter'
 import moment from 'moment'
 
+const DATE_TAG_PREFIX = '❉'
 const EMPTY_TAG = '⌧⌧⌧'
+const WEIGHT_TAG_PREFIX = '⚖'
 
 const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
 const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g|\[(#[\w\-]+)\])/g
@@ -639,6 +641,10 @@ function getConsumptions(note, datePart = 2) { // {{{
 	return consumptions
 } // }}}
 
+function getDateTag(brew) { // {{{
+	return `${DATE_TAG_PREFIX}${moment(brew.date).format('YYMM')}`
+} // }}}
+
 function getRemaining(note) { // {{{
 	if(isFinished(note)) {
 		return 0
@@ -676,24 +682,24 @@ function getRemainingAt(note, targetDate, targetStr) { // {{{
 	}
 } // }}}
 
-function getTag(rem) { // {{{
+function getWeightTag(rem) { // {{{
 	if (rem < 5) {
-		return '⚖00'
+		return `${WEIGHT_TAG_PREFIX}00`
 	}
 	else if (rem < 10) {
-		return '⚖05'
+		return `${WEIGHT_TAG_PREFIX}05`
 	}
 	else if (rem < 15) {
-		return '⚖10'
+		return `${WEIGHT_TAG_PREFIX}10`
 	}
 	else if (rem < 20) {
-		return '⚖15'
+		return `${WEIGHT_TAG_PREFIX}15`
 	}
 	else if (rem >= 100) {
-		return '⚖99'
+		return `${WEIGHT_TAG_PREFIX}99`
 	}
 	else {
-		return `⚖${parseInt(rem / 10)}0`
+		return `${WEIGHT_TAG_PREFIX}${parseInt(rem / 10)}0`
 	}
 } // }}}
 
@@ -1048,6 +1054,7 @@ function updateRemaining(note, steps, dispatch) { // {{{
 		const lastDate = lastBrew.raw.length === 5 ? moment(lastBrew.date).endOf('month') : moment(lastBrew.date).add(1, 'day')
 
 		let content = ''
+		let updateTags = false
 
 		if(note.tags.includes(EMPTY_TAG)) {
 			const total = raws.reduce((acc, val) => acc + val.weight, 0)
@@ -1059,6 +1066,30 @@ function updateRemaining(note, steps, dispatch) { // {{{
 			}
 
 			content += `\n\t~ 0g (${lastDate.format('DD.MM.YY')}, ${total.toFixed(1)}g)`
+
+			const dateTag = getDateTag(lastBrew)
+			let df = false
+
+			for(let i = note.tags.length - 1; i > 0; --i) {
+				if(note.tags[i][0] === WEIGHT_TAG_PREFIX) {
+					note.tags.splice(i, 1)
+					updateTags = true
+				}
+				else if(note.tags[i][0] === DATE_TAG_PREFIX) {
+					if(note.tags[i] === dateTag) {
+						df = true
+					}
+					else {
+						note.tags.splice(i, 1)
+						updateTags = true
+					}
+				}
+			}
+
+			if(!df) {
+				note.tags.push(dateTag)
+				updateTags = true
+			}
 		}
 		else {
 			const total = consumption > initial.weight ? consumption + 2 : initial.weight
@@ -1073,10 +1104,39 @@ function updateRemaining(note, steps, dispatch) { // {{{
 
 			content += `\n\t~ ${(rem).toFixed(1)}g (${lastDate.format('DD.MM.YY')}, ${consumption.toFixed(1)}g)`
 
-			const tag = getTag(rem)
-			const tagIndex = note.tags.indexOf(tag)
-			if(tagIndex === -1) {
-				note.tags.splice(tagIndex, 1, tag)
+			const dateTag = getDateTag(lastBrew)
+			const weightTag = getWeightTag(rem)
+			let df = false
+			let wf = false
+
+			for(let i = note.tags.length - 1; i > 0; --i) {
+				if(note.tags[i][0] === WEIGHT_TAG_PREFIX) {
+					if(note.tags[i] === weightTag) {
+						wf = true
+					}
+					else {
+						note.tags.splice(i, 1)
+						updateTags = true
+					}
+				}
+				else if(note.tags[i][0] === DATE_TAG_PREFIX) {
+					if(note.tags[i] === dateTag) {
+						df = true
+					}
+					else {
+						note.tags.splice(i, 1)
+						updateTags = true
+					}
+				}
+			}
+
+			if(!wf) {
+				note.tags.push(weightTag)
+				updateTags = true
+			}
+			if(!df) {
+				note.tags.push(dateTag)
+				updateTags = true
 			}
 		}
 
@@ -1086,6 +1146,14 @@ function updateRemaining(note, steps, dispatch) { // {{{
 			if (sha256(note.content) !== sha256(content)) {
 				note.content = content
 
+				dataApi.updateNote(note.storage, note.key, note).then((note) => {
+					dispatch({
+						type: 'UPDATE_NOTE',
+						note
+					})
+				})
+			}
+			else if(updateTags) {
 				dataApi.updateNote(note.storage, note.key, note).then((note) => {
 					dispatch({
 						type: 'UPDATE_NOTE',
