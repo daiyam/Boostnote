@@ -9,7 +9,7 @@
   flex-direction column
 
 .top
-  padding-bottom 15px
+  padding-bottom 10px
 
 .switch-buttons
   background-color transparent
@@ -35,19 +35,15 @@
   height 30px
   line-height 25px
   overflow hidden
-  .tag-control-title
-    padding-left 15px
-    padding-bottom 13px
-    flex 1
-    p
-      color $ui-button-default-color
-  .tag-control-sortTagsBy, .tag-control-storage
+  .tag-control-prefix
+    flex-grow 1
+  .tag-control-sortTagsBy, .tag-control-storage, .tag-control-prefix
     user-select none
     font-size 12px
     color $ui-inactive-text-color
     margin-left 12px
     margin-right 12px
-    .tag-control-sortTagsBy-select, .tag-control-storage-select
+    .tag-control-sortTagsBy-select, .tag-control-storage-select, .tag-control-prefix-select
       appearance: none;
       margin-left 5px
       color $ui-inactive-text-color
