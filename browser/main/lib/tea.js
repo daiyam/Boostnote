@@ -3,6 +3,7 @@ import dataApi from 'browser/main/lib/dataApi'
 import ee from 'browser/main/lib/eventEmitter'
 import moment from 'moment'
 
+const CONTAINER_TAG_PREFIX = '℥'
 const DATE_TAG_PREFIX = '❉'
 const EMPTY_TAG = '⌧⌧⌧'
 const WEIGHT_TAG_PREFIX = '⚖'
@@ -1071,7 +1072,7 @@ function updateRemaining(note, steps, dispatch) { // {{{
 			let df = false
 
 			for(let i = note.tags.length - 1; i > 0; --i) {
-				if(note.tags[i][0] === WEIGHT_TAG_PREFIX) {
+				if(note.tags[i][0] === WEIGHT_TAG_PREFIX || note.tags[i][0] === CONTAINER_TAG_PREFIX) {
 					note.tags.splice(i, 1)
 					updateTags = true
 				}
