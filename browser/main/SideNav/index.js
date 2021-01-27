@@ -162,6 +162,12 @@ class SideNav extends React.Component {
 		})
 	} // }}}
 
+	handlePrefixClear(e) { // {{{
+		this.setState({
+			prefix: ''
+		})
+	} // }}}
+
 	handleRenameTagClick(tagName) { // {{{
 		const { data, dispatch, location, params } = this.props
 		const { router } = this.context
@@ -491,6 +497,15 @@ class SideNav extends React.Component {
 							<option value=''>Tags</option>
 							{ prefixes.map(title => <option value={title}>{title}</option>) }
 						</select>
+						{
+							this.state.prefix &&
+							<button
+								styleName='tag-control-prefix-clear'
+								onClick={(e) => this.handlePrefixClear(e)}
+							>
+								<i className='fa fa-fw fa-times' />
+							</button>
+						}
 					</div>
 					<div styleName='tag-control-sortTagsBy'>
 						<i className='fa fa-angle-down' />
