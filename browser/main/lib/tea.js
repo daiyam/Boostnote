@@ -9,7 +9,9 @@ const EMPTY_TAG = '⌧⌧⌧'
 const WEIGHT_TAG_PREFIX = '⚖'
 
 const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
-const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g(?:\+([\d\.]+)g)?|\[(#[\w\-]+)\])/g
+const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]+\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g(?:\+([\d\.]+)g)?|\[(#[\w\-]+)\])/g
+const BREW_NEW_REGEX = /^\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
+const BREW_LINE_REGEX = /^\|\s+(?:\d+\.\d+)?\s+\|\s+\|\s+\|\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const DEFLIST_LINK_REGEX = /\n\[([\w\-]+)\][ \t]*\n\t~[ \t]+\[[^\]]+\]\(:note:([\w\-]+)\)/g
 const LINK_REGEX = /\n\[([^\]]+)\]:\s+:note:([\w\-]+)/g
 const MIX_BREW_REGEX = /\n\|\s+(?:\d+\.)?(\d+\.\d+)\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[(#?[\w\-]+)\]/g
@@ -370,6 +372,62 @@ function buildTableContext(noteMap, tagNoteMap, newSearch) { // {{{
 		hashes,
 		links
 	}
+} // }}}
+
+function duplicateLastTasting(note, dispatch) { // {{{
+	if(!isBrew(note) || note.tags.includes(EMPTY_TAG)) {
+		return
+	}
+
+	const lines = note.content.split(/\n/g)
+
+	let steps
+	let last
+	let inbrew = false
+	let intable = false
+
+	let line, match
+	for(let l = 0; l < lines.length ; ++l) {
+		line = lines[l]
+
+		if((match = BREW_NEW_REGEX.exec(line))) {
+			steps = [`| ${moment().format('DD.MM.YY')} | ${match[1]} | ${match[2]} | ${match[3]} | ${match[4]} | ${match[5]} | ${match[6]} |   |   |`]
+
+			inbrew = true
+			intable = true
+			last = l
+		}
+		else if(inbrew) {
+			if((match = BREW_LINE_REGEX.exec(line))) {
+				steps.push(`|   |   |   |   | ${match[1]} | ${match[2]} | ${match[3]} |   |   |`)
+			}
+			else {
+				inbrew = false
+			}
+
+			last = l
+		}
+		else if(intable) {
+			if(line[0] === '|') {
+				last = l
+			}
+			else {
+				intable = false
+			}
+		}
+	}
+
+	lines.splice(last, 0, ...steps)
+
+	note.content = lines.join('\n')
+
+	dataApi
+		.updateNote(note.storage, note.key, note)
+		.then((note) => dispatch({
+			type: 'UPDATE_NOTE',
+			note
+		}))
+		.then(() => setTimeout(() => ee.emit('note:refresh'), 100))
 } // }}}
 
 function findNote(title, noteMap) { // {{{
@@ -1173,6 +1231,7 @@ function updateRemaining(note, steps, dispatch) { // {{{
 } // }}}
 
 export {
+	duplicateLastTasting,
 	generateCurrentConsumption,
 	generateSelectedConsumption,
 	generateReserve

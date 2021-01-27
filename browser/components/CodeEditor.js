@@ -181,17 +181,7 @@ export default class CodeEditor extends React.Component {
 					}
 				}
 			},
-			'Cmd-T': function (cm) {
-				// Do nothing
-			},
 			Enter: 'boostNewLineAndIndentContinueMarkdownList',
-			'Cmd-D': 'deleteLine',
-			'Ctrl-C': cm => {
-				if (cm.getOption('keyMap').substr(0, 3) === 'vim') {
-					document.execCommand('copy')
-				}
-				return CodeMirror.Pass
-			},
 			[translateHotkey(hotkey.pasteSmartly)]: cm => {
 				this.handlePaste(cm, true)
 			}
@@ -250,7 +240,7 @@ export default class CodeEditor extends React.Component {
 			indentUnit: this.props.indentSize,
 			tabSize: this.props.indentSize,
 			indentWithTabs: this.props.indentType !== 'space',
-			keyMap: this.props.keyMap,
+			keyMap: 'macDefault',
 			scrollPastEnd: this.props.scrollPastEnd,
 			inputStyle: 'textarea',
 			dragDrop: false,
