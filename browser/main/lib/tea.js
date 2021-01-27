@@ -9,7 +9,7 @@ const EMPTY_TAG = '⌧⌧⌧'
 const WEIGHT_TAG_PREFIX = '⚖'
 
 const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
-const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g|\[(#[\w\-]+)\])/g
+const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g(?:\+([\d\.]+)g)?|\[(#[\w\-]+)\])/g
 const DEFLIST_LINK_REGEX = /\n\[([\w\-]+)\][ \t]*\n\t~[ \t]+\[[^\]]+\]\(:note:([\w\-]+)\)/g
 const LINK_REGEX = /\n\[([^\]]+)\]:\s+:note:([\w\-]+)/g
 const MIX_BREW_REGEX = /\n\|\s+(?:\d+\.)?(\d+\.\d+)\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[(#?[\w\-]+)\]/g
@@ -611,6 +611,10 @@ function getConsumptions(note, datePart = 2) { // {{{
 	while ((match = BREW_REGEX.exec(note.content))) {
 		if (match[3]) {
 			weight = parseFloat(match[3])
+
+			if (match[4]) {
+				weight += parseFloat(match[4])
+			}
 		}
 		else {
 			// hybrid mix
@@ -618,7 +622,7 @@ function getConsumptions(note, datePart = 2) { // {{{
 				mixes = loadMixes(note)
 			}
 
-			const mix = mixes[match[4]]
+			const mix = mixes[match[5]]
 			if (mix) {
 				weight = mix['#']
 			}
