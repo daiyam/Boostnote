@@ -18,7 +18,7 @@ import normalizeEditorFontFamily from 'browser/lib/normalizeEditorFontFamily'
 const spellcheck = require('browser/lib/spellcheck')
 const buildEditorContextMenu = require('browser/lib/contextMenuBuilder')
 import TurndownService from 'turndown'
-import { gfm } from 'turndown-plugin-gfm'
+import moment from 'moment'
 
 CodeMirror.modeURL = '../node_modules/codemirror/mode/%N/%N.js'
 
@@ -336,7 +336,14 @@ export default class CodeEditor extends React.Component {
 			'Alt-Shift-Ctrl-Up': () => { this.tableEditor.moveRow(-1, this.tableEditorOptions) },
 			'Alt-Shift-Cmd-Up': () => { this.tableEditor.moveRow(-1, this.tableEditorOptions) },
 			'Alt-Shift-Ctrl-Down': () => { this.tableEditor.moveRow(1, this.tableEditorOptions) },
-			'Alt-Shift-Cmd-Down': () => { this.tableEditor.moveRow(1, this.tableEditorOptions) }
+			'Alt-Shift-Cmd-Down': () => { this.tableEditor.moveRow(1, this.tableEditorOptions) },
+			'Shift-Cmd-D': (cm) => {
+				const cursor = cm.getCursor()
+
+				cm.replaceRange(moment().format('DD.MM.YY'), cursor)
+
+				this.tableEditor.format(this.tableEditorOptions)
+			}
 		})
 
 		if (this.props.enableTableEditor) {

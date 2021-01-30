@@ -428,6 +428,8 @@ function duplicateLastTasting(note, dispatch) { // {{{
 			note
 		}))
 		.then(() => setTimeout(() => ee.emit('note:refresh'), 100))
+		.then(() => setTimeout(() => ee.emit('code:format-table'), 100))
+		.then(() => setTimeout(() => ee.emit('line:jump', last), 100))
 } // }}}
 
 function findNote(title, noteMap) { // {{{
