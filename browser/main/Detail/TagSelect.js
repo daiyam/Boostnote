@@ -15,6 +15,7 @@ class TagSelect extends React.Component {
 		this.state = {
 			newTag: '',
 			suggestions: [],
+			suggestionTarget: '',
 			mouseOverTag: null,
 			contextMenu: false,
 		}
@@ -210,35 +211,19 @@ class TagSelect extends React.Component {
 			case 13:
 				this.submitNewTag()
 				break
-			default:
-				if (this.suggestions.length !== 0 && this.state.suggestions.length === 0) {
-					this.setState({
-						suggestions: _.filter(
-							this.suggestions,
-							tag => !_.includes(this.value, tag.name)
-						)
-					})
-				}
 		}
 	}
 
 	onSuggestionsClearRequested() {
 		this.setState({
 			suggestions: [],
+			suggestionTarget: '',
 			contextMenu: false
 		})
 	}
 
 	onSuggestionsFetchRequested({ value }) {
-		const valueLC = value.toLowerCase()
-		const suggestions = _.filter(
-			this.suggestions,
-			tag => !_.includes(this.value, tag.name) && tag.nameLC.indexOf(valueLC) !== -1
-		)
-
-		this.setState({
-			suggestions
-		})
+		this.updateSuggestions(value)
 	}
 
 	onSuggestionSelected(event, { suggestion, suggestionValue }) {
@@ -283,7 +268,9 @@ class TagSelect extends React.Component {
 	}
 
 	shouldRenderSuggestions(value) {
-		if(this.state.suggestions.length === 0) {
+		const length = this.updateSuggestions(value)
+
+		if(length === 0) {
 			return false
 		}
 		if(value.length === 0 && !this.state.contextMenu) {
@@ -349,6 +336,26 @@ class TagSelect extends React.Component {
 				/>
 			</div>
 		)
+	}
+
+	updateSuggestions(value) {
+		const valueLC = value.toLowerCase()
+
+		if(this.state.suggestionTarget === valueLC) {
+			return this.state.suggestions.length
+		}
+
+		const suggestions = _.filter(
+			this.suggestions,
+			tag => !_.includes(this.value, tag.name) && tag.nameLC.indexOf(valueLC) !== -1
+		)
+
+		this.setState({
+			suggestions,
+			suggestionTarget: valueLC
+		})
+
+		return suggestions.length
 	}
 }
 
