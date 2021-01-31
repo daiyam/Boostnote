@@ -8,6 +8,20 @@ import ee from 'browser/main/lib/eventEmitter'
 import Autosuggest from 'react-autosuggest'
 import { TagQuery } from 'browser/main/lib/TagQuery'
 
+function isMasterTag(name) {
+	if(name.length === 1) {
+		return name.charCodeAt(0) > 128
+	}
+	else if(name.length === 3) {
+		const c = name.charCodeAt(0);
+
+		return name.split('').every(v => v.charCodeAt(0) === c)
+	}
+	else {
+		return false
+	}
+}
+
 class TagSelect extends React.Component {
 	constructor(props) {
 		super(props)
@@ -145,7 +159,7 @@ class TagSelect extends React.Component {
 
 	onContextMenu(e) {
 		const { data, location } = this.props
-		const filter = e.altKey ? (name) => !_.includes(this.value, name) : (name) => !_.includes(this.value, name) && name.split('').every(c => c.charCodeAt(0) > 128)
+		const filter = e.altKey ? (name) => !_.includes(this.value, name) : (name) => !_.includes(this.value, name) && isMasterTag(name)
 
 		const tagList = []
 
