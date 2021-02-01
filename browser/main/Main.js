@@ -19,402 +19,409 @@ import applyShortcuts from 'browser/main/lib/shortcutManager'
 const path = require('path')
 const electron = require('electron')
 const { remote } = electron
-import { generateCurrentConsumption, generateSelectedConsumption, generateReserve } from 'browser/main/lib/tea'
+import { generateCurrentConsumption, generateSelectedConsumption, generatePurchase, generateReserve } from 'browser/main/lib/tea'
 import { TagQuery } from 'browser/main/lib/TagQuery'
 
 class Main extends React.Component {
-  constructor (props) {
-    super(props)
+	constructor(props) {
+		super(props)
 
-    const { config } = props
+		const { config } = props
 
-    this.state = {
-      isRightSliderFocused: false,
-      listWidth: config.listWidth,
-      navWidth: config.navWidth,
-      isLeftSliderFocused: false,
-      fullScreen: false,
-      noteDetailWidth: 0,
-      mainBodyWidth: 0
-    }
+		this.state = {
+			isRightSliderFocused: false,
+			listWidth: config.listWidth,
+			navWidth: config.navWidth,
+			isLeftSliderFocused: false,
+			fullScreen: false,
+			noteDetailWidth: 0,
+			mainBodyWidth: 0
+		}
 
-    this.generateCurrentConsumption = () => this.handleCurrentConsumption()
-    this.generateSelectedConsumption = () => this.handleSelectedConsumption()
-    this.generateReserve = () => this.handleReserve()
-    this.toggleFullScreen = () => this.handleFullScreenButton()
-    this.pushNewRoute = this.handleNewRoute.bind(this)
-  }
+		this.generateCurrentConsumption = () => this.handleCurrentConsumption()
+		this.generateSelectedConsumption = () => this.handleSelectedConsumption()
+		this.generatePurchase = () => this.handlePurchase()
+		this.generateReserve = () => this.handleReserve()
+		this.toggleFullScreen = () => this.handleFullScreenButton()
+		this.pushNewRoute = this.handleNewRoute.bind(this)
+	}
 
-  getChildContext () {
-    const { status, config } = this.props
+	getChildContext() {
+		const { status, config } = this.props
 
-    return {
-      status,
-      config
-    }
-  }
+		return {
+			status,
+			config
+		}
+	}
 
-  init () {
-    dataApi
-      .addStorage({
-        name: 'My Storage Location',
-        path: path.join(remote.app.getPath('home'), 'Teanote')
-      })
-      .then(data => {
-        return data
-      })
-      .then(data => {
-        if (data.storage.folders[0] != null) {
-          return data
-        } else {
-          return dataApi
-            .createFolder(data.storage.key, {
-              color: '#1278BD',
-              name: 'Default'
-            })
-            .then(_data => {
-              return {
-                storage: _data.storage,
-                notes: data.notes
-              }
-            })
-        }
-      })
-      .then(data => {
-        store.dispatch({
-          type: 'ADD_STORAGE',
-          storage: data.storage,
-          notes: data.notes
-        })
+	init() {
+		dataApi
+			.addStorage({
+				name: 'My Storage Location',
+				path: path.join(remote.app.getPath('home'), 'Teanote')
+			})
+			.then(data => {
+				return data
+			})
+			.then(data => {
+				if (data.storage.folders[0] != null) {
+					return data
+				} else {
+					return dataApi
+						.createFolder(data.storage.key, {
+							color: '#1278BD',
+							name: 'Default'
+						})
+						.then(_data => {
+							return {
+								storage: _data.storage,
+								notes: data.notes
+							}
+						})
+				}
+			})
+			.then(data => {
+				store.dispatch({
+					type: 'ADD_STORAGE',
+					storage: data.storage,
+					notes: data.notes
+				})
 
-        const defaultSnippetNote = dataApi
-          .createNote(data.storage.key, {
-            type: 'SNIPPET_NOTE',
-            folder: data.storage.folders[0].key,
-            title: 'Snippet note example',
-            description: 'Snippet note example\nYou can store a series of snippets as a single note, like Gist.',
-            snippets: [
-              {
-                name: 'example.html',
-                mode: 'html',
-                content: "<html>\n<body>\n<h1 id='hello'>Enjoy Teanote!</h1>\n</body>\n</html>"
-              },
-              {
-                name: 'example.js',
-                mode: 'javascript',
-                content: "var boostnote = document.getElementById('enjoy').innerHTML\n\nconsole.log(boostnote)"
-              }
-            ]
-          })
-          .then(note => {
-            store.dispatch({
-              type: 'UPDATE_NOTE',
-              note: note
-            })
-          })
-        const defaultMarkdownNote = dataApi
-          .createNote(data.storage.key, {
-            type: 'MARKDOWN_NOTE',
-            folder: data.storage.folders[0].key,
-            title: 'Welcome to Teanote!',
-            content: '# Welcome to Teanote!\n## Click here to edit markdown :wave:\n\n<iframe width="560" height="315" src="https://www.youtube.com/embed/L0qNPLsvmyM" frameborder="0" allowfullscreen></iframe>\n\n## Docs :memo:\n- [Boostnote | Boost your happiness, productivity and creativity.](https://hackernoon.com/boostnote-boost-your-happiness-productivity-and-creativity-315034efeebe)\n- [Cloud Syncing & Backups](https://github.com/BoostIO/Boostnote/wiki/Cloud-Syncing-and-Backup)\n- [How to sync your data across Desktop and Mobile apps](https://github.com/BoostIO/Boostnote/wiki/Sync-Data-Across-Desktop-and-Mobile-apps)\n- [Convert data from **Evernote** to Boostnote.](https://github.com/BoostIO/Boostnote/wiki/Evernote)\n- [Keyboard Shortcuts](https://github.com/BoostIO/Boostnote/wiki/Keyboard-Shortcuts)\n- [Keymaps in Editor mode](https://github.com/BoostIO/Boostnote/wiki/Keymaps-in-Editor-mode)\n- [How to set syntax highlight in Snippet note](https://github.com/BoostIO/Boostnote/wiki/Syntax-Highlighting)\n\n---\n\n## Article Archive :books:\n- [Reddit English](http://bit.ly/2mOJPu7)\n- [Reddit Spanish](https://www.reddit.com/r/boostnote_es/)\n- [Reddit Chinese](https://www.reddit.com/r/boostnote_cn/)\n- [Reddit Japanese](https://www.reddit.com/r/boostnote_jp/)\n\n---\n\n## Community :beers:\n- [GitHub](http://bit.ly/2AWWzkD)\n- [Twitter](http://bit.ly/2z8BUJZ)\n- [Facebook Group](http://bit.ly/2jcca8t)'
-          })
-          .then(note => {
-            store.dispatch({
-              type: 'UPDATE_NOTE',
-              note: note
-            })
-          })
+				const defaultSnippetNote = dataApi
+					.createNote(data.storage.key, {
+						type: 'SNIPPET_NOTE',
+						folder: data.storage.folders[0].key,
+						title: 'Snippet note example',
+						description: 'Snippet note example\nYou can store a series of snippets as a single note, like Gist.',
+						snippets: [
+							{
+								name: 'example.html',
+								mode: 'html',
+								content: "<html>\n<body>\n<h1 id='hello'>Enjoy Teanote!</h1>\n</body>\n</html>"
+							},
+							{
+								name: 'example.js',
+								mode: 'javascript',
+								content: "var boostnote = document.getElementById('enjoy').innerHTML\n\nconsole.log(boostnote)"
+							}
+						]
+					})
+					.then(note => {
+						store.dispatch({
+							type: 'UPDATE_NOTE',
+							note: note
+						})
+					})
+				const defaultMarkdownNote = dataApi
+					.createNote(data.storage.key, {
+						type: 'MARKDOWN_NOTE',
+						folder: data.storage.folders[0].key,
+						title: 'Welcome to Teanote!',
+						content: '# Welcome to Teanote!\n## Click here to edit markdown :wave:\n\n<iframe width="560" height="315" src="https://www.youtube.com/embed/L0qNPLsvmyM" frameborder="0" allowfullscreen></iframe>\n\n## Docs :memo:\n- [Boostnote | Boost your happiness, productivity and creativity.](https://hackernoon.com/boostnote-boost-your-happiness-productivity-and-creativity-315034efeebe)\n- [Cloud Syncing & Backups](https://github.com/BoostIO/Boostnote/wiki/Cloud-Syncing-and-Backup)\n- [How to sync your data across Desktop and Mobile apps](https://github.com/BoostIO/Boostnote/wiki/Sync-Data-Across-Desktop-and-Mobile-apps)\n- [Convert data from **Evernote** to Boostnote.](https://github.com/BoostIO/Boostnote/wiki/Evernote)\n- [Keyboard Shortcuts](https://github.com/BoostIO/Boostnote/wiki/Keyboard-Shortcuts)\n- [Keymaps in Editor mode](https://github.com/BoostIO/Boostnote/wiki/Keymaps-in-Editor-mode)\n- [How to set syntax highlight in Snippet note](https://github.com/BoostIO/Boostnote/wiki/Syntax-Highlighting)\n\n---\n\n## Article Archive :books:\n- [Reddit English](http://bit.ly/2mOJPu7)\n- [Reddit Spanish](https://www.reddit.com/r/boostnote_es/)\n- [Reddit Chinese](https://www.reddit.com/r/boostnote_cn/)\n- [Reddit Japanese](https://www.reddit.com/r/boostnote_jp/)\n\n---\n\n## Community :beers:\n- [GitHub](http://bit.ly/2AWWzkD)\n- [Twitter](http://bit.ly/2z8BUJZ)\n- [Facebook Group](http://bit.ly/2jcca8t)'
+					})
+					.then(note => {
+						store.dispatch({
+							type: 'UPDATE_NOTE',
+							note: note
+						})
+					})
 
-        return Promise.resolve(defaultSnippetNote)
-          .then(defaultMarkdownNote)
-          .then(() => data.storage)
-      })
-      .then(storage => {
-        hashHistory.push('/storages/' + storage.key)
-      })
-      .catch(err => {
-        throw err
-      })
-  }
+				return Promise.resolve(defaultSnippetNote)
+					.then(defaultMarkdownNote)
+					.then(() => data.storage)
+			})
+			.then(storage => {
+				hashHistory.push('/storages/' + storage.key)
+			})
+			.catch(err => {
+				throw err
+			})
+	}
 
-  componentDidMount () {
-    const { dispatch, config } = this.props
+	componentDidMount() {
+		const { dispatch, config } = this.props
 
-    const supportedThemes = ['dark', 'white', 'solarized-dark', 'monokai', 'dracula']
+		const supportedThemes = ['dark', 'white', 'solarized-dark', 'monokai', 'dracula']
 
-    if (supportedThemes.indexOf(config.ui.theme) !== -1) {
-      document.body.setAttribute('data-theme', config.ui.theme)
-    } else {
-      document.body.setAttribute('data-theme', 'default')
-    }
+		if (supportedThemes.indexOf(config.ui.theme) !== -1) {
+			document.body.setAttribute('data-theme', config.ui.theme)
+		} else {
+			document.body.setAttribute('data-theme', 'default')
+		}
 
-    if (getLocales().indexOf(config.ui.language) !== -1) {
-      i18n.setLocale(config.ui.language)
-    } else {
-      i18n.setLocale('en')
-    }
-    applyShortcuts()
-    // Reload all data
-    dataApi.init().then(data => {
-      dispatch({
-        type: 'INIT_ALL',
-        storages: data.storages,
-        notes: data.notes
-      })
+		if (getLocales().indexOf(config.ui.language) !== -1) {
+			i18n.setLocale(config.ui.language)
+		} else {
+			i18n.setLocale('en')
+		}
+		applyShortcuts()
+		// Reload all data
+		dataApi.init().then(data => {
+			dispatch({
+				type: 'INIT_ALL',
+				storages: data.storages,
+				notes: data.notes
+			})
 
-      if (data.storages.length < 1) {
-        this.init()
-      }
-    })
+			if (data.storages.length < 1) {
+				this.init()
+			}
+		})
 
-    delete CodeMirror.keyMap.emacs['Ctrl-V']
+		delete CodeMirror.keyMap.emacs['Ctrl-V']
 
-    eventEmitter.on('editor:fullscreen', this.toggleFullScreen)
-    eventEmitter.on('editor:generate-current-consumption', this.generateCurrentConsumption)
-    eventEmitter.on('editor:generate-selected-consumption', this.generateSelectedConsumption)
-    eventEmitter.on('editor:generate-reserve', this.generateReserve)
+		eventEmitter.on('editor:fullscreen', this.toggleFullScreen)
+		eventEmitter.on('editor:generate-current-consumption', this.generateCurrentConsumption)
+		eventEmitter.on('editor:generate-selected-consumption', this.generateSelectedConsumption)
+		eventEmitter.on('editor:generate-reserve', this.generateReserve)
+		eventEmitter.on('editor:generate-purchase', this.generatePurchase)
 
-    eventEmitter.on('dispatch:push', this.pushNewRoute)
-  }
+		eventEmitter.on('dispatch:push', this.pushNewRoute)
+	}
 
-  componentWillUnmount () {
-    eventEmitter.off('editor:fullscreen', this.toggleFullScreen)
-    eventEmitter.off('editor:generate-current-consumption', this.generateCurrentConsumption)
-    eventEmitter.off('editor:generate-selected-consumption', this.generateSelectedConsumption)
-    eventEmitter.off('editor:generate-reserve', this.generateReserve)
+	componentWillUnmount() {
+		eventEmitter.off('editor:fullscreen', this.toggleFullScreen)
+		eventEmitter.off('editor:generate-current-consumption', this.generateCurrentConsumption)
+		eventEmitter.off('editor:generate-selected-consumption', this.generateSelectedConsumption)
+		eventEmitter.off('editor:generate-reserve', this.generateReserve)
+		eventEmitter.off('editor:generate-purchase', this.generatePurchase)
 
-    eventEmitter.off('dispatch:push', this.pushNewRoute)
-  }
+		eventEmitter.off('dispatch:push', this.pushNewRoute)
+	}
 
-  handleCurrentConsumption() {
-    generateCurrentConsumption(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
-  }
+	handleCurrentConsumption() {
+		generateCurrentConsumption(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
+	}
 
-  handleSelectedConsumption() {
-    const note = this.props.data.noteMap.get(this.props.location.query.key)
-    if(note) {
-      generateSelectedConsumption(note, this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
-    }
-  }
+	handleSelectedConsumption() {
+		const note = this.props.data.noteMap.get(this.props.location.query.key)
+		if (note) {
+			generateSelectedConsumption(note, this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
+		}
+	}
 
-  handleReserve() {
-    generateReserve(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
-  }
+	handlePurchase() {
+		generatePurchase(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
+	}
 
-  handleLeftSlideMouseDown (e) {
-    e.preventDefault()
-    this.setState({
-      isLeftSliderFocused: true
-    })
-  }
+	handleReserve() {
+		generateReserve(this.props.data.noteMap, this.props.data.tagNoteMap, this.props.dispatch)
+	}
 
-  handleNewRoute(event, args) {
-    const { history, location } = this.props
+	handleLeftSlideMouseDown(e) {
+		e.preventDefault()
+		this.setState({
+			isLeftSliderFocused: true
+		})
+	}
 
-    if(args.tags) {
-	   TagQuery.navigate(args.tags, location, history)
-    }
-  }
+	handleNewRoute(event, args) {
+		const { history, location } = this.props
 
-  handleRightSlideMouseDown (e) {
-    e.preventDefault()
-    this.setState({
-      isRightSliderFocused: true
-    })
-  }
+		if (args.tags) {
+			TagQuery.navigate(args.tags, location, history)
+		}
+	}
 
-  handleMouseUp (e) {
-    // Change width of NoteList component.
-    if (this.state.isRightSliderFocused) {
-      this.setState(
-        {
-          isRightSliderFocused: false
-        },
-        () => {
-          const { dispatch } = this.props
-          const newListWidth = this.state.listWidth
-          // TODO: ConfigManager should dispatch itself.
-          ConfigManager.set({ listWidth: newListWidth })
-          dispatch({
-            type: 'SET_LIST_WIDTH',
-            listWidth: newListWidth
-          })
-        }
-      )
-    }
+	handleRightSlideMouseDown(e) {
+		e.preventDefault()
+		this.setState({
+			isRightSliderFocused: true
+		})
+	}
 
-    // Change width of SideNav component.
-    if (this.state.isLeftSliderFocused) {
-      this.setState(
-        {
-          isLeftSliderFocused: false
-        },
-        () => {
-          const { dispatch } = this.props
-          const navWidth = this.state.navWidth
-          // TODO: ConfigManager should dispatch itself.
-          ConfigManager.set({ navWidth })
-          dispatch({
-            type: 'SET_NAV_WIDTH',
-            navWidth
-          })
-        }
-      )
-    }
-  }
+	handleMouseUp(e) {
+		// Change width of NoteList component.
+		if (this.state.isRightSliderFocused) {
+			this.setState(
+				{
+					isRightSliderFocused: false
+				},
+				() => {
+					const { dispatch } = this.props
+					const newListWidth = this.state.listWidth
+					// TODO: ConfigManager should dispatch itself.
+					ConfigManager.set({ listWidth: newListWidth })
+					dispatch({
+						type: 'SET_LIST_WIDTH',
+						listWidth: newListWidth
+					})
+				}
+			)
+		}
 
-  handleMouseMove (e) {
-    if (this.state.isRightSliderFocused) {
-      const offset = this.refs.body.getBoundingClientRect().left
-      let newListWidth = e.pageX - offset
-      if (newListWidth < 10) {
-        newListWidth = 10
-      } else if (newListWidth > 600) {
-        newListWidth = 600
-      }
-      this.setState({
-        listWidth: newListWidth
-      })
-    }
-    if (this.state.isLeftSliderFocused) {
-      let navWidth = e.pageX
-      if (navWidth < 80) {
-        navWidth = 80
-      } else if (navWidth > 600) {
-        navWidth = 600
-      }
-      this.setState({
-        navWidth: navWidth
-      })
-    }
-  }
+		// Change width of SideNav component.
+		if (this.state.isLeftSliderFocused) {
+			this.setState(
+				{
+					isLeftSliderFocused: false
+				},
+				() => {
+					const { dispatch } = this.props
+					const navWidth = this.state.navWidth
+					// TODO: ConfigManager should dispatch itself.
+					ConfigManager.set({ navWidth })
+					dispatch({
+						type: 'SET_NAV_WIDTH',
+						navWidth
+					})
+				}
+			)
+		}
+	}
 
-  handleFullScreenButton (e) {
-    this.setState({ fullScreen: !this.state.fullScreen }, () => {
-      const noteDetail = document.querySelector('.NoteDetail')
-      const noteList = document.querySelector('.NoteList')
-      const mainBody = document.querySelector('#main-body')
+	handleMouseMove(e) {
+		if (this.state.isRightSliderFocused) {
+			const offset = this.refs.body.getBoundingClientRect().left
+			let newListWidth = e.pageX - offset
+			if (newListWidth < 10) {
+				newListWidth = 10
+			} else if (newListWidth > 600) {
+				newListWidth = 600
+			}
+			this.setState({
+				listWidth: newListWidth
+			})
+		}
+		if (this.state.isLeftSliderFocused) {
+			let navWidth = e.pageX
+			if (navWidth < 80) {
+				navWidth = 80
+			} else if (navWidth > 600) {
+				navWidth = 600
+			}
+			this.setState({
+				navWidth: navWidth
+			})
+		}
+	}
 
-      if (this.state.fullScreen) {
-        this.hideLeftLists(noteDetail, noteList, mainBody)
-      } else {
-        this.showLeftLists(noteDetail, noteList, mainBody)
-      }
-    })
-  }
+	handleFullScreenButton(e) {
+		this.setState({ fullScreen: !this.state.fullScreen }, () => {
+			const noteDetail = document.querySelector('.NoteDetail')
+			const noteList = document.querySelector('.NoteList')
+			const mainBody = document.querySelector('#main-body')
 
-  hideLeftLists (noteDetail, noteList, mainBody) {
-    this.setState({ noteDetailWidth: noteDetail.style.left })
-    this.setState({ mainBodyWidth: mainBody.style.left })
-    noteDetail.style.left = '0px'
-    mainBody.style.left = '0px'
-    noteList.style.display = 'none'
-  }
+			if (this.state.fullScreen) {
+				this.hideLeftLists(noteDetail, noteList, mainBody)
+			} else {
+				this.showLeftLists(noteDetail, noteList, mainBody)
+			}
+		})
+	}
 
-  showLeftLists (noteDetail, noteList, mainBody) {
-    noteDetail.style.left = this.state.noteDetailWidth
-    mainBody.style.left = this.state.mainBodyWidth
-    noteList.style.display = 'inline'
-  }
+	hideLeftLists(noteDetail, noteList, mainBody) {
+		this.setState({ noteDetailWidth: noteDetail.style.left })
+		this.setState({ mainBodyWidth: mainBody.style.left })
+		noteDetail.style.left = '0px'
+		mainBody.style.left = '0px'
+		noteList.style.display = 'none'
+	}
 
-  render () {
-    const { config } = this.props
+	showLeftLists(noteDetail, noteList, mainBody) {
+		noteDetail.style.left = this.state.noteDetailWidth
+		mainBody.style.left = this.state.mainBodyWidth
+		noteList.style.display = 'inline'
+	}
 
-    // the width of the navigation bar when it is folded/collapsed
-    const foldedNavigationWidth = 44
+	render() {
+		const { config } = this.props
 
-    return (
-      <div
-        className='Main'
-        styleName='root'
-        onMouseMove={e => this.handleMouseMove(e)}
-        onMouseUp={e => this.handleMouseUp(e)}
-      >
-        <SideNav
-          {..._.pick(this.props, ['dispatch', 'data', 'config', 'params', 'location'])}
-          width={this.state.navWidth}
-        />
-        {!config.isSideNavFolded &&
-          <div
-            styleName={
-              this.state.isLeftSliderFocused ? 'slider--active' : 'slider'
-            }
-            style={{ left: this.state.navWidth }}
-            onMouseDown={e => this.handleLeftSlideMouseDown(e)}
-            draggable='false'
-          >
-            <div styleName='slider-hitbox' />
-          </div>}
-        <div
-          styleName={config.isSideNavFolded ? 'body--expanded' : 'body'}
-          id='main-body'
-          ref='body'
-          style={{
-            left: config.isSideNavFolded
-              ? foldedNavigationWidth
-              : this.state.navWidth
-          }}
-        >
-          <TopBar
-            style={{ width: this.state.listWidth }}
-            {..._.pick(this.props, [
-              'dispatch',
-              'config',
-              'data',
-              'params',
-              'location'
-            ])}
-          />
-          <NoteList
-            style={{ width: this.state.listWidth }}
-            {..._.pick(this.props, [
-              'dispatch',
-              'data',
-              'config',
-              'params',
-              'location'
-            ])}
-          />
-          <div
-            styleName={
-              this.state.isRightSliderFocused
-                ? 'slider-right--active'
-                : 'slider-right'
-            }
-            style={{ left: this.state.listWidth - 1 }}
-            onMouseDown={e => this.handleRightSlideMouseDown(e)}
-            draggable='false'
-          >
-            <div styleName='slider-hitbox' />
-          </div>
-          <Detail
-            style={{ left: this.state.listWidth }}
-            {..._.pick(this.props, [
-              'dispatch',
-              'data',
-              'config',
-              'params',
-              'location'
-            ])}
-            ignorePreviewPointerEvents={this.state.isRightSliderFocused}
-          />
-        </div>
-      </div>
-    )
-  }
+		// the width of the navigation bar when it is folded/collapsed
+		const foldedNavigationWidth = 44
+
+		return (
+			<div
+				className='Main'
+				styleName='root'
+				onMouseMove={e => this.handleMouseMove(e)}
+				onMouseUp={e => this.handleMouseUp(e)}
+			>
+				<SideNav
+					{..._.pick(this.props, ['dispatch', 'data', 'config', 'params', 'location'])}
+					width={this.state.navWidth}
+				/>
+				{!config.isSideNavFolded &&
+					<div
+						styleName={
+							this.state.isLeftSliderFocused ? 'slider--active' : 'slider'
+						}
+						style={{ left: this.state.navWidth }}
+						onMouseDown={e => this.handleLeftSlideMouseDown(e)}
+						draggable='false'
+					>
+						<div styleName='slider-hitbox' />
+					</div>}
+				<div
+					styleName={config.isSideNavFolded ? 'body--expanded' : 'body'}
+					id='main-body'
+					ref='body'
+					style={{
+						left: config.isSideNavFolded
+							? foldedNavigationWidth
+							: this.state.navWidth
+					}}
+				>
+					<TopBar
+						style={{ width: this.state.listWidth }}
+						{..._.pick(this.props, [
+							'dispatch',
+							'config',
+							'data',
+							'params',
+							'location'
+						])}
+					/>
+					<NoteList
+						style={{ width: this.state.listWidth }}
+						{..._.pick(this.props, [
+							'dispatch',
+							'data',
+							'config',
+							'params',
+							'location'
+						])}
+					/>
+					<div
+						styleName={
+							this.state.isRightSliderFocused
+								? 'slider-right--active'
+								: 'slider-right'
+						}
+						style={{ left: this.state.listWidth - 1 }}
+						onMouseDown={e => this.handleRightSlideMouseDown(e)}
+						draggable='false'
+					>
+						<div styleName='slider-hitbox' />
+					</div>
+					<Detail
+						style={{ left: this.state.listWidth }}
+						{..._.pick(this.props, [
+							'dispatch',
+							'data',
+							'config',
+							'params',
+							'location'
+						])}
+						ignorePreviewPointerEvents={this.state.isRightSliderFocused}
+					/>
+				</div>
+			</div>
+		)
+	}
 }
 
 Main.childContextTypes = {
-  status: PropTypes.shape({
-    updateReady: PropTypes.bool.isRequired
-  }).isRequired,
-  config: PropTypes.shape({}).isRequired
+	status: PropTypes.shape({
+		updateReady: PropTypes.bool.isRequired
+	}).isRequired,
+	config: PropTypes.shape({}).isRequired
 }
 
 Main.propTypes = {
-  dispatch: PropTypes.func,
-  data: PropTypes.shape({}).isRequired
+	dispatch: PropTypes.func,
+	data: PropTypes.shape({}).isRequired
 }
 
 export default connect(x => x)(CSSModules(Main, styles))

@@ -339,7 +339,7 @@ class SideNav extends React.Component {
 		)
 	} // }}}
 
-	renderFolderMode() { // {{{
+	renderFolderMode(isFolded, storageList) { // {{{
 		const { location, data } = this.props
 
 		const isHomeActive = !!location.pathname.match(/^\/home$/)
@@ -457,7 +457,7 @@ class SideNav extends React.Component {
 		)
 	} // }}}
 
-	renderTagMode() { // {{{
+	renderTagMode(isFolded, storageList) { // {{{
 		const { location, data, config } = this.props
 
 		const prefixes = []

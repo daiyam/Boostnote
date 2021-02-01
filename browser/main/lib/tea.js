@@ -162,6 +162,112 @@ function buildConsumptionTable(content, year, { nbRowHeaders, rows, searchs, max
 	return content
 } // }}}
 
+function buildPurchaseContent({ nbRowHeaders, headers, rows, max, links, current }) { // {{{
+	let content = `## Tea Purchase\n\n\n`
+
+	const maxValues = headers.length
+	const headersLength = max.reduce((acc, val) => acc + (val ? val + 2 : 0), 0)
+
+	content += `|${' '.repeat(headersLength)}${'|'.repeat(nbRowHeaders - 1)}`
+
+	for (const { name } of headers) {
+		content += `| ${' '.repeat(7 - name.length)}${name} `
+	}
+	content += '|\n'
+
+	for (let i = 0; i < nbRowHeaders; ++i) {
+		content += `| ${'-'.repeat(max[i])} `
+	}
+
+	for (const header of headers) {
+		content += `| ${'-'.repeat(7)}:`
+	}
+	content += '|\n'
+
+	for (const row of rows) {
+		if(row.type === 'new-body') {
+			for (let i = 0; i < nbRowHeaders; ++i) {
+				content += `| ${'-'.repeat(max[i])} `
+			}
+
+			for (let i = 0; i < maxValues; ++i) {
+				content += `| ${'-'.repeat(7)} `
+			}
+		}
+		else if(row.type === 'separator') {
+			content += `|${' '.repeat(headersLength)}${'|'.repeat(nbRowHeaders - 1)}`
+
+			for (let i = 0; i < maxValues; ++i) {
+				content += `| ${'-'.repeat(7)} `
+			}
+		}
+		else {
+			let colspan = 0
+
+			for (let i = 0; i < nbRowHeaders; ++i) {
+				if (row.cells[i].length) {
+					content += `| ${row.cells[i]}${' '.repeat(max[i] - row.cells[i].length)} `
+
+					if (row.cells[i] === '^^' && i < 3 && row.cells[i + 1].length === 0) {
+						content += `|`
+
+						--colspan
+					}
+				}
+				else if (i === 0) {
+					content += `| ${' '.repeat(max[i])} `
+				}
+				else {
+					content += ' '.repeat(max[i] + 2)
+
+					++colspan
+				}
+			}
+
+			if (colspan !== 0) {
+				content += '|'.repeat(colspan)
+			}
+
+			if (row.search) {
+				for (const { name } of headers) {
+					let purchase = row.search.purchase[name]
+
+					if(purchase) {
+						if(typeof purchase !== 'string') {
+							purchase = `${purchase.toFixed(1)}g`
+						}
+
+						content += `| ${' '.repeat(7 - purchase.length)}${purchase} `
+					}
+					else {
+						content += `| ${' '.repeat(7)} `
+					}
+				}
+			}
+			else {
+				for (const header of headers) {
+					content += `| ${' '.repeat(7)} `
+				}
+			}
+		}
+
+		content += '|\n'
+	}
+
+	if(Object.keys(links).length !== 0) {
+		content += '\n\n\n\n\n'
+
+		for(const [alias, tag] of Object.entries(links)) {
+			content += `\n[${alias}]: :tag:${tag}`
+		}
+	}
+	else {
+		content += '\n'
+	}
+
+	return content
+} // }}}
+
 function buildReserveContent({ nbRowHeaders, headers, rows, max, links, current }) { // {{{
 	let content = `## Tea Reserve\n\n\n`
 
@@ -584,6 +690,91 @@ function generateSelectedConsumption(mainNote, noteMap, tagNoteMap, dispatch) { 
 			})
 		})
 		.then(() => ee.emit('note:refresh'))
+} // }}}
+
+function generatePurchase(noteMap, tagNoteMap, dispatch) { // {{{
+	const mainNote = findNote('Tea Purchase', noteMap)
+	if(!mainNote) {
+		return alert('No purchase note')
+	}
+
+	const context = buildTableContext(noteMap, tagNoteMap, (tags) => ({ tags, purchase: {} }))
+
+	context.headers = []
+
+	for (const [key, note] of noteMap) {
+		if(!note.isTrashed) {
+			const match = REM_REGEX.exec(note.content)
+			if(match) {
+				const weight = parseFloat(match[1])
+				const date = moment(match[2], 'DD.MM.YY').startOf('year').toDate()
+				const name = moment(date).format('YYYY')
+
+				let nf = true
+				for (const [index, header] of context.headers.entries()) {
+					if(header.date - date > 0) {
+						context.headers.splice(index, 0, {
+							name,
+							date
+						})
+
+						nf = false
+						break
+					}
+					else if(header.date - date === 0) {
+						nf = false
+						break
+					}
+				}
+
+				if(nf) {
+					context.headers.push({
+						name,
+						date
+					})
+				}
+
+				for (const search of context.searchs) {
+					let match = true
+
+					for (const tag of search.tags) {
+						if (!note.tags.includes(tag)) {
+							match = false
+
+							break
+						}
+					}
+
+					if (match) {
+						if(typeof search.purchase[name] !== 'number') {
+							search.purchase[name] = weight
+						}
+						else {
+							search.purchase[name] += weight
+						}
+					}
+				}
+			}
+
+			REM_REGEX.lastIndex = 0
+		}
+	}
+
+	const content = buildPurchaseContent(context)
+
+	if (sha256(mainNote.content) !== sha256(content)) {
+		mainNote.content = content
+
+		dataApi
+			.updateNote(mainNote.storage, mainNote.key, mainNote)
+			.then((note) => {
+				dispatch({
+					type: 'UPDATE_NOTE',
+					note
+				})
+			})
+			.then(() => ee.emit('note:refresh'))
+	}
 } // }}}
 
 function generateReserve(noteMap, tagNoteMap, dispatch) { // {{{
@@ -1060,7 +1251,7 @@ function updateMix(note, noteMap, dispatch) { // {{{
 } // }}}
 
 function updateRemaining(note, steps, dispatch) { // {{{
-	if(!TEST_REM_REGEX.test(note.content)) {
+	if(note.isTrashed || !TEST_REM_REGEX.test(note.content)) {
 		return false
 	}
 	else if(note.tags.includes(EMPTY_TAG) && /~\s+0g\s+\(/.test(note.content)) {
@@ -1236,5 +1427,6 @@ export {
 	duplicateLastTasting,
 	generateCurrentConsumption,
 	generateSelectedConsumption,
+	generatePurchase,
 	generateReserve
 }
