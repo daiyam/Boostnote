@@ -39,6 +39,7 @@ class TagSelect extends React.Component {
 		this.onInputBlur = this.onInputBlur.bind(this)
 		this.onInputChange = this.onInputChange.bind(this)
 		this.onInputKeyDown = this.onInputKeyDown.bind(this)
+		this.onInputKeyUp = this.onInputKeyUp.bind(this)
 		this.onSuggestionsClearRequested = this.onSuggestionsClearRequested.bind(this)
 		this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this)
 		this.onSuggestionSelected = this.onSuggestionSelected.bind(this)
@@ -158,6 +159,10 @@ class TagSelect extends React.Component {
 	}
 
 	onContextMenu(e) {
+		if(this.refs.newTag.input.value.length !== 0) {
+			return
+		}
+
 		const { data, location } = this.props
 		const filter = e.altKey ? (name) => !_.includes(this.value, name) : (name) => !_.includes(this.value, name) && isMasterTag(name)
 
@@ -217,14 +222,18 @@ class TagSelect extends React.Component {
 	}
 
 	onInputKeyDown(e) {
-		switch (e.keyCode) {
-			case 9:
-				e.preventDefault()
-				this.submitNewTag()
-				break
-			case 13:
-				this.submitNewTag()
-				break
+		if(e.keyCode === 9) {
+			e.preventDefault()
+			this.submitNewTag()
+		}
+		else if(e.keyCode === 13) {
+			this.submitNewTag()
+		}
+	}
+
+	onInputKeyUp(e) {
+		if(e.keyCode > 48) {
+			this.updateSuggestions(this.refs.newTag.input.value)
 		}
 	}
 
@@ -282,9 +291,7 @@ class TagSelect extends React.Component {
 	}
 
 	shouldRenderSuggestions(value) {
-		const length = this.updateSuggestions(value)
-
-		if(length === 0) {
+		if(this.state.suggestions.length === 0) {
 			return false
 		}
 		if(value.length === 0 && !this.state.contextMenu) {
@@ -344,6 +351,7 @@ class TagSelect extends React.Component {
 						value: newTag,
 						onChange: this.onInputChange,
 						onKeyDown: this.onInputKeyDown,
+						onKeyUp: this.onInputKeyUp,
 						onBlur: this.onInputBlur,
 						onContextMenu: this.onContextMenu
 					}}
