@@ -7,7 +7,7 @@ import attachmentManagement from 'browser/main/lib/dataApi/attachmentManagement'
 import convertModeName from 'browser/lib/convertModeName'
 import { options, TableEditor, Alignment } from '@susisu/mte-kernel'
 import TextEditorInterface from 'browser/lib/TextEditorInterface'
-import eventEmitter from 'browser/main/lib/eventEmitter'
+import ee from 'browser/main/lib/eventEmitter'
 import iconv from 'iconv-lite'
 import crypto from 'crypto'
 import consts from 'browser/lib/consts'
@@ -206,7 +206,7 @@ export default class CodeEditor extends React.Component {
 
 	componentDidMount() {
 		const { rulers, enableRulers, switchPreview } = this.props
-		eventEmitter.on('line:jump', this.scrollToLineHandeler)
+		ee.on('line:jump', this.scrollToLineHandeler)
 
 		const defaultSnippet = [
 			{
@@ -262,9 +262,9 @@ export default class CodeEditor extends React.Component {
 		if (switchPreview !== 'RIGHTCLICK') {
 			this.editor.on('contextmenu', this.contextMenuHandler)
 		}
-		eventEmitter.on('top:search', this.searchHandler)
+		ee.on('top:search', this.searchHandler)
 
-		eventEmitter.emit('code:init')
+		ee.emit('code:init')
 		this.editor.on('scroll', this.scrollHandler)
 		this.editor.on('cursorActivity', this.editorActivityHandler)
 
@@ -283,7 +283,7 @@ export default class CodeEditor extends React.Component {
 			this.editor.addPanel(this.createSpellCheckPanel(), { position: 'bottom' })
 		}
 
-		eventEmitter.on('code:format-table', this.formatTable)
+		ee.on('code:format-table', this.formatTable)
 
 		this.editor.on('renderLine', function (cm, line, el) {
 			if (el.getElementsByClassName('cm-deflist-indent').length > 0) {
@@ -343,7 +343,8 @@ export default class CodeEditor extends React.Component {
 				cm.replaceRange(moment().format('DD.MM.YY'), cursor)
 
 				this.tableEditor.format(this.tableEditorOptions)
-			}
+			},
+			'Shift-Cmd-L': () => { ee.emit('code:duplicate-last-tasting') }
 		})
 
 		if (this.props.enableTableEditor) {
@@ -444,7 +445,7 @@ export default class CodeEditor extends React.Component {
 		this.editor.off('blur', this.blurHandler)
 		this.editor.off('change', this.changeHandler)
 		this.editor.off('paste', this.pasteHandler)
-		eventEmitter.off('top:search', this.searchHandler)
+		ee.off('top:search', this.searchHandler)
 		this.editor.off('scroll', this.scrollHandler)
 		this.editor.off('cursorActivity', this.editorActivityHandler)
 		this.editor.off('contextmenu', this.contextMenuHandler)
@@ -453,7 +454,7 @@ export default class CodeEditor extends React.Component {
 		editorTheme.removeEventListener('load', this.loadStyleHandler)
 
 		spellcheck.setLanguage(null, spellcheck.SPELLCHECK_DISABLED)
-		eventEmitter.off('code:format-table', this.formatTable)
+		ee.off('code:format-table', this.formatTable)
 
 		if (this.props.enableTableEditor) {
 			this.editor.off('changes', this.editorActivityHandler)
