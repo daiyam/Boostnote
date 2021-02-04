@@ -7,7 +7,7 @@ $control-height = 30px
 
 .item
   position relative
-  padding 0 20px
+  padding 0 12px
   user-select none
   cursor pointer
   background-color $ui-noteList-backgroundColor
@@ -73,27 +73,31 @@ $control-height = 30px
   position relative
   font-size 12px
   color $ui-inactive-text-color
-  top 2px
+  margin-right 4px
+  min-width: 1.28571429em;
+  max-width: 1.28571429em;
+
+.item-top
+  position relative
+  margin-bottom 12px
+  display flex
+  align-items center
 
 .item-title
+  color $ui-inactive-text-color
   font-size 15px
   font-weight 700
-  position relative
-  top -12px
-  left 20px
-  padding 0px 15px 0px 0px
-  margin-bottom 4px
-  overflow ellipsis
-  color $ui-inactive-text-color
+  text-overflow ellipsis
+  overflow hidden
+  white-space nowrap
 
 .item-title-empty
-  font-weight normal
   color $ui-inactive-text-color
+  font-size 15px
 
 .item-middle
   font-size 13px
-  padding-left 2px
-  padding-bottom 2px
+  margin-bottom 12px
 
 .item-middle-time
   color $ui-inactive-text-color
@@ -112,19 +116,15 @@ $control-height = 30px
 
 .item-bottom
   position relative
-  bottom 0px
-  margin-top 10px
   font-size 12px
   line-height 20px
-  overflow ellipsis
-  display block
+  display flex
+  align-items center
 
 .item-bottom-tagList
   flex 1
   overflow ellipsis
   line-height 25px
-  padding-left 2px
-  margin-right 40px
 
 .item-bottom-tagList-item
   font-size 11px
@@ -144,22 +144,22 @@ $control-height = 30px
   padding-bottom 2px
 
 .item-star
-  position absolute
-  right 2px
-  top 5px
   color alpha($ui-favorite-star-button-color, 60%)
   font-size 12px
   padding 0
   border-radius 17px
+  margin-left auto
 
 .item-pin
-  position absolute
-  right 25px
-  top 7px
   color #E54D42
   font-size 14px
   padding 0
   border-radius 17px
+  margin-left auto
+  padding-left 12px
+
+.item-star + .item-pin
+  margin-left 0
 
 body[data-theme="white"]
   .item

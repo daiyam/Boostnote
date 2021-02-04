@@ -509,10 +509,10 @@ class MarkdownNoteDetail extends React.Component {
 					{this.renderEditor()}
 				</div>
 
-				<StatusBar
+				{/* <StatusBar
 					{..._.pick(this.props, ['config', 'location', 'dispatch'])}
 					date={note.updatedAt}
-				/>
+				/> */}
 			</div>
 		)
 	}

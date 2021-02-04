@@ -326,13 +326,9 @@ class SideNav extends React.Component {
 				style={style}
 			>
 				<div styleName='top'>
-					<div styleName='switch-buttons'>
-						<ListButton onClick={this.handleSwitchFoldersButtonClick.bind(this)} isTagActive={isTagActive} />
-						<TagButton onClick={this.handleSwitchTagsButtonClick.bind(this)} isTagActive={isTagActive} />
-					</div>
-					<div>
-						<PreferenceButton onClick={this.handleMenuButtonClick} />
-					</div>
+					<ListButton onClick={this.handleSwitchFoldersButtonClick.bind(this)} isTagActive={isTagActive} />
+					<TagButton onClick={this.handleSwitchTagsButtonClick.bind(this)} isTagActive={isTagActive} />
+					<PreferenceButton onClick={this.handleMenuButtonClick} />
 				</div>
 				{ isFolderMode ? this.renderFolderMode(isFolded, storageList) : this.renderTagMode(isFolded, storageList) }
 			</div>

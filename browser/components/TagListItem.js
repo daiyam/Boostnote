@@ -72,10 +72,8 @@ class TagListItem extends Component {
 					<div styleName={'tagList-itemNarrow'} />
 				}
 				<button styleName={state ? 'tagList-item-active' : 'tagList-item'} onClick={() => handleClickTagListItem(name)}>
-					<span styleName='tagList-item-name'>
-						{`# ${name}`}
-						<span styleName='tagList-item-count'>{count !== 0 ? count : ''}</span>
-					</span>
+					<span styleName='tagList-item-name'>{`# ${name}`}</span>
+					<span styleName='tagList-item-count'>{count !== 0 ? count : ''}</span>
 				</button>
 			</div>
 		)
