@@ -9,6 +9,9 @@ const EMPTY_TAG = '⌧⌧⌧'
 const WEIGHT_TAG_PREFIX = '⚖'
 
 const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
+const BEST_HEADER_REGEX = /^\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew\s+\|\s+Time\s+\|\s+Temptr\s+\|/
+const BEST_BREW_NEW_REGEX = /^\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
+const BEST_BREW_LINE_REGEX = /^\|\s+\|\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]+\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g(?:\+([\d\.]+)g)?|\[(#[\w\-]+)\])/g
 const BREW_NEW_REGEX = /^\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const BREW_LINE_REGEX = /^\|\s+(?:\d+\.\d+)?\s+\|\s+\|\s+\|\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
@@ -480,64 +483,6 @@ function buildTableContext(noteMap, tagNoteMap, newSearch) { // {{{
 	}
 } // }}}
 
-function duplicateLastTasting(note, dispatch) { // {{{
-	if(!isBrew(note) || note.tags.includes(EMPTY_TAG)) {
-		return
-	}
-
-	const lines = note.content.split(/\n/g)
-
-	let steps
-	let last
-	let inbrew = false
-	let intable = false
-
-	let line, match
-	for(let l = 0; l < lines.length ; ++l) {
-		line = lines[l]
-
-		if((match = BREW_NEW_REGEX.exec(line))) {
-			steps = [`| ${moment().format('DD.MM.YY')} | ${match[1]} | ${match[2]} | ${match[3]} | ${match[4]} | ${match[5]} | ${match[6]} |   |   |`]
-
-			inbrew = true
-			intable = true
-			last = l
-		}
-		else if(inbrew) {
-			if((match = BREW_LINE_REGEX.exec(line))) {
-				steps.push(`|   |   |   |   | ${match[1]} | ${match[2]} | ${match[3]} |   |   |`)
-			}
-			else {
-				inbrew = false
-			}
-
-			last = l
-		}
-		else if(intable) {
-			if(line[0] === '|') {
-				last = l
-			}
-			else {
-				intable = false
-			}
-		}
-	}
-
-	lines.splice(last, 0, ...steps)
-
-	note.content = lines.join('\n')
-
-	dataApi
-		.updateNote(note.storage, note.key, note)
-		.then((note) => dispatch({
-			type: 'UPDATE_NOTE',
-			note
-		}))
-		.then(() => setTimeout(() => ee.emit('note:refresh'), 100))
-		.then(() => setTimeout(() => ee.emit('code:format-table'), 100))
-		.then(() => setTimeout(() => ee.emit('line:jump', last), 100))
-} // }}}
-
 function findNote(title, noteMap) { // {{{
 	for (const [key, note] of noteMap) {
 		if (!note.isTrashed && note.title === title) {
@@ -897,6 +842,46 @@ function getConsumptions(note, datePart = 2) { // {{{
 	return consumptions
 } // }}}
 
+function getBests(content) { // {{{
+	const lines = content.split(/\n/g)
+
+	const bests = {
+		from: 0,
+		to: lines.length,
+		brews: {}
+	}
+
+	let inbest = false
+
+	let line, match, brew
+	for(let l = 0; l < lines.length ; ++l) {
+		line = lines[l]
+
+		if(inbest) {
+			if(line[0] !== '|') {
+				bests.to = l - 1
+
+				break
+			}
+
+			if((match = BEST_BREW_NEW_REGEX.exec(line))) {
+				brew = [[match[1], match[2], match[3], match[4], match[5]]]
+
+				bests.brews[parseInt(match[1])] = brew
+			}
+			else if((match = BEST_BREW_LINE_REGEX.exec(line))) {
+				brew.push(['', '', match[1], match[2], match[3]])
+			}
+		}
+		else if((match = BEST_HEADER_REGEX.exec(line))) {
+			inbest = true
+			bests.from = l
+		}
+	}
+
+	return inbest ? bests : null
+} // }}}
+
 function getDateTag(brew) { // {{{
 	return `${DATE_TAG_PREFIX}${moment(brew.date).format('YYMM')}`
 } // }}}
@@ -959,6 +944,36 @@ function getWeightTag(rem) { // {{{
 	}
 } // }}}
 
+function gotoNewBrew(cm) { // {{{
+	const cursor = cm.getCursor()
+
+	let line = cm.getLine(cursor.line)
+	if(line[0] !== '|') {
+		return 0
+	}
+
+	let from = 0
+	if(BREW_NEW_REGEX.test(line)) {
+		from = cursor.line
+	}
+	else {
+		let i = cursor.line
+		while(--i >= 0) {
+			line = cm.getLine(i)
+
+			if(line[0] !== '|') {
+				break
+			}
+			else if(BREW_NEW_REGEX.test(line)) {
+				from = i
+				break
+			}
+		}
+	}
+
+	return from
+} // }}}
+
 function isBrew(note) { // {{{
 	return !note.isTrashed && TEST_BREW_REGEX.test(note.content)
 } // }}}
@@ -1005,6 +1020,68 @@ function loadMixes(note) { // {{{
 	}
 
 	return mixes
+} // }}}
+
+function markBest(cm, cb) { // {{{
+	const from = gotoNewBrew(cm)
+	if(!from) {
+		return
+	}
+
+	let match = BREW_NEW_REGEX.exec(cm.getLine(from))
+	let steps = [[match[2], match[3], match[4], match[5], match[6]]]
+	let to = from
+	let l = cm.lineCount()
+	const brew = parseInt(match[2])
+
+	for(let i = from + 1; i < l ; ++i) {
+		if((match = BREW_LINE_REGEX.exec(cm.getLine(i)))) {
+			steps.push(['', '', match[1], match[2], match[3]])
+			to = i
+		}
+		else {
+			break
+		}
+	}
+
+	let bests = getBests(cm.getValue())
+	if(!bests) {
+		cm.replaceRange(`
+## Best Brewing Steps
+
+
+| Volum | Weyt | Brew  | Time  | Temptr |
+|:-----:|:----:|:-----:| ----- |:------:|
+
+`, { line: l + 1, ch: 0 }, { line: l + 1, ch: 0 })
+
+		bests = { from: l + 3, to: l + 4, brews: {} }
+	}
+
+	if(bests.brews[brew]) {
+		return
+	}
+
+	bests.brews[brew] = steps
+
+	const weights = Object.keys(bests.brews).sort((a, b) => parseInt(a) - parseInt(b))
+
+	let content = ''
+	for(const w of weights) {
+		if(content.length > 0) {
+			content += '| ----- | ---- | ---- | ----- | ------ |\n'
+		}
+
+		for(const l of bests.brews[w]) {
+			content += `| ${l[0]} | ${l[1]} | ${l[2]} | ${l[3]} | ${l[4]} |\n`
+		}
+	}
+
+	cm.replaceRange(content, { line: bests.from + 2, ch: 0 }, { line: bests.to + 1, ch: 0 }, '|')
+
+	cm.setCursor({ line: bests.from + 2, ch: 0 })
+
+	cb && cb()
 } // }}}
 
 function matchTags(cells, tags, tagNoteMap, links) { // {{{
@@ -1055,6 +1132,117 @@ function matchTags(cells, tags, tagNoteMap, links) { // {{{
 	return true
 } // }}}
 
+function rebrewBest(note, volume, dispatch) { // {{{
+	if(!isBrew(note) || note.tags.includes(EMPTY_TAG)) {
+		return
+	}
+
+	const bests = getBests(note.content)
+
+	const brew = bests.brews[volume] || (volume === 100 ? bests.brews[90] : null)
+
+	const lines = note.content.split(/\n/g)
+
+	let intable = false
+	let last = lines.length
+
+	let line
+	for(let l = 0; l < lines.length ; ++l) {
+		line = lines[l]
+
+		if(intable) {
+			if(line[0] !== '|') {
+				last = l
+				break
+			}
+		}
+		else if(TEST_BREW_REGEX.test(line)) {
+			intable = true
+		}
+	}
+
+	const steps = brew.map((values, i) => {
+		if(i) {
+			return `|   |   | ${values.join(' | ')} |`
+		}
+		else {
+			return `| ${moment().format('DD.MM.YY')} | MB | ${values.join(' | ')} |`
+		}
+	})
+
+	lines.splice(last, 0, ...steps)
+
+	note.content = lines.join('\n')
+
+	dataApi
+		.updateNote(note.storage, note.key, note)
+		.then((note) => dispatch({
+			type: 'UPDATE_NOTE',
+			note
+		}))
+		.then(() => setTimeout(() => ee.emit('note:refresh'), 100))
+		.then(() => setTimeout(() => ee.emit('code:format-table'), 100))
+		.then(() => setTimeout(() => ee.emit('line:jump', last), 100))
+} // }}}
+
+function rebrewLast(note, dispatch) { // {{{
+	if(!isBrew(note) || note.tags.includes(EMPTY_TAG)) {
+		return
+	}
+
+	const lines = note.content.split(/\n/g)
+
+	let steps
+	let last
+	let inbrew = false
+	let intable = false
+
+	let line, match
+	for(let l = 0; l < lines.length ; ++l) {
+		line = lines[l]
+
+		if((match = BREW_NEW_REGEX.exec(line))) {
+			steps = [`| ${moment().format('DD.MM.YY')} | ${match[1]} | ${match[2]} | ${match[3]} | ${match[4]} | ${match[5]} | ${match[6]} |   |   |`]
+
+			inbrew = true
+			intable = true
+			last = l
+		}
+		else if(inbrew) {
+			if((match = BREW_LINE_REGEX.exec(line))) {
+				steps.push(`|   |   |   |   | ${match[1]} | ${match[2]} | ${match[3]} |   |   |`)
+			}
+			else {
+				inbrew = false
+			}
+
+			last = l
+		}
+		else if(intable) {
+			if(line[0] === '|') {
+				last = l
+			}
+			else {
+				intable = false
+			}
+		}
+	}
+
+	lines.splice(last, 0, ...steps)
+
+	note.content = lines.join('\n')
+
+	dataApi
+		.updateNote(note.storage, note.key, note)
+		.then((note) => dispatch({
+			type: 'UPDATE_NOTE',
+			note
+		}))
+		.then(() => setTimeout(() => ee.emit('note:refresh'), 100))
+		.then(() => setTimeout(() => ee.emit('code:format-table'), 100))
+		.then(() => setTimeout(() => ee.emit('line:jump', last), 100))
+} // }}}
+
 function replaceRowspans(cells, olds, nbRowHeaders = 4) { // {{{
 	const row = []
 
@@ -1068,6 +1256,33 @@ function replaceRowspans(cells, olds, nbRowHeaders = 4) { // {{{
 	}
 
 	return row
+} // }}}
+
+function resetBrew(cm, cb) { // {{{
+	const from = gotoNewBrew(cm)
+	if(!from) {
+		return
+	}
+
+	let match = BREW_NEW_REGEX.exec(cm.getLine(from))
+	let steps = `|   | ${match[1]} | ${match[2]} | ${match[3]} | ${match[4]} | ${match[5]} | ${match[6]} |   |   |\n`
+	let to = from
+
+	for(let i = from + 1, l = cm.lineCount(); i < l ; ++i) {
+		if((match = BREW_LINE_REGEX.exec(cm.getLine(i)))) {
+			steps += `|   |   |   |   | ${match[1]} | ${match[2]} | ${match[3]} |   |   |\n`
+			to = i
+		}
+		else {
+			break
+		}
+	}
+
+	cm.replaceRange(steps, { line: from, ch: 0 }, { line: to + 1, ch: 0 }, '|')
+
+	cm.setCursor({ line: from, ch: 0 })
+
+	cb && cb()
 } // }}}
 
 function restoreReserveValues(content, context) { // {{{
@@ -1424,9 +1639,12 @@ function updateRemaining(note, steps, dispatch) { // {{{
 } // }}}
 
 export {
-	duplicateLastTasting,
 	generateCurrentConsumption,
 	generateSelectedConsumption,
 	generatePurchase,
-	generateReserve
+	generateReserve,
+	markBest,
+	rebrewBest,
+	rebrewLast,
+	resetBrew,
 }

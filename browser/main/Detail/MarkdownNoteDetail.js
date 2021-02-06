@@ -30,7 +30,7 @@ import striptags from 'striptags'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import markdownToc from 'browser/lib/markdown-toc-generator'
 import { locateNote } from 'browser/lib/location'
-import { duplicateLastTasting } from 'browser/main/lib/tea'
+import { rebrewBest, rebrewLast } from 'browser/main/lib/tea'
 
 class MarkdownNoteDetail extends React.Component {
 	constructor(props) {
@@ -48,9 +48,10 @@ class MarkdownNoteDetail extends React.Component {
 		}
 		this.dispatchTimer = null
 
-		this.duplicateLastTasting = () => this.handleDuplicateLastTasting()
 		this.generateToc = () => this.handleGenerateToc()
 		this.toggleLockButton = () => this.handleToggleLockButton()
+		this.rebrewBest = this.handleRebrewBest.bind(this)
+		this.rebrewLast = () => this.handleRebrewLast()
 		this.refresh = () => this.handleRefresh()
 	}
 
@@ -67,7 +68,8 @@ class MarkdownNoteDetail extends React.Component {
 		ee.on('hotkey:deletenote', this.handleDeleteNote.bind(this))
 
 		ee.on('code:generate-toc', this.generateToc)
-		ee.on('code:duplicate-last-tasting', this.duplicateLastTasting)
+		ee.on('code:rebrew-best', this.rebrewBest)
+		ee.on('code:rebrew-last', this.rebrewLast)
 
 		ee.on('note:refresh', this.refresh)
 	}
@@ -93,15 +95,20 @@ class MarkdownNoteDetail extends React.Component {
 		ee.off('topbar:togglelockbutton', this.toggleLockButton)
 
 		ee.off('code:generate-toc', this.generateToc)
-		ee.off('code:duplicate-last-tasting', this.duplicateLastTasting)
+		ee.off('code:rebrew-best', this.rebrewBest)
+		ee.off('code:rebrew-last', this.rebrewLast)
 
 		ee.off('note:refresh', this.refresh)
 
 		if (this.saveQueue != null) this.saveNow()
 	}
 
-	handleDuplicateLastTasting() {
-		duplicateLastTasting(this.state.note, this.props.dispatch)
+	handleRebrewBest(e, volume) {
+		rebrewBest(this.state.note, volume, this.props.dispatch)
+	}
+
+	handleRebrewLast() {
+		rebrewLast(this.state.note, this.props.dispatch)
 	}
 
 	handleUpdateTag() {

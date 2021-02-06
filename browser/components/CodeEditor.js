@@ -19,6 +19,7 @@ const spellcheck = require('browser/lib/spellcheck')
 const buildEditorContextMenu = require('browser/lib/contextMenuBuilder')
 import TurndownService from 'turndown'
 import moment from 'moment'
+import { markBest, resetBrew } from 'browser/main/lib/tea'
 
 CodeMirror.modeURL = '../node_modules/codemirror/mode/%N/%N.js'
 
@@ -344,7 +345,9 @@ export default class CodeEditor extends React.Component {
 
 				this.tableEditor.format(this.tableEditorOptions)
 			},
-			'Shift-Cmd-L': () => { ee.emit('code:duplicate-last-tasting') }
+			'Shift-Cmd-L': () => { ee.emit('code:rebrew-last') },
+			'Shift-Cmd-;': (cm) => resetBrew(cm, () => this.tableEditor.format(this.tableEditorOptions)),
+			'Shift-Cmd-B': (cm) => markBest(cm, () => this.tableEditor.format(this.tableEditorOptions)),
 		})
 
 		if (this.props.enableTableEditor) {
