@@ -168,24 +168,25 @@ function buildConsumptionTable(content, year, { nbRowHeaders, rows, searchs, max
 function buildPurchaseContent({ nbRowHeaders, headers, rows, max, links, current }) { // {{{
 	let content = `## Tea Purchase\n\n\n`
 
+	const w = 8
 	const maxValues = headers.length
 	const headersLength = max.reduce((acc, val) => acc + (val ? val + 2 : 0), 0)
 
 	content += `|${' '.repeat(headersLength)}${'|'.repeat(nbRowHeaders - 1)}`
 
 	for (const { name } of headers) {
-		content += `| ${' '.repeat(7 - name.length)}${name} `
+		content += `| ${' '.repeat(w - name.length)}${name} `
 	}
-	content += '|\n'
+	content += `| ${' '.repeat(w)} |\n`
 
 	for (let i = 0; i < nbRowHeaders; ++i) {
 		content += `| ${'-'.repeat(max[i])} `
 	}
 
 	for (const header of headers) {
-		content += `| ${'-'.repeat(7)}:`
+		content += `| ${'-'.repeat(w)}:`
 	}
-	content += '|\n'
+	content += `| ${'-'.repeat(w)}:|\n`
 
 	for (const row of rows) {
 		if(row.type === 'new-body') {
@@ -194,18 +195,23 @@ function buildPurchaseContent({ nbRowHeaders, headers, rows, max, links, current
 			}
 
 			for (let i = 0; i < maxValues; ++i) {
-				content += `| ${'-'.repeat(7)} `
+				content += `| ${'-'.repeat(w)} `
 			}
+
+			content += `| ${'-'.repeat(w)} `
 		}
 		else if(row.type === 'separator') {
 			content += `|${' '.repeat(headersLength)}${'|'.repeat(nbRowHeaders - 1)}`
 
 			for (let i = 0; i < maxValues; ++i) {
-				content += `| ${'-'.repeat(7)} `
+				content += `| ${'-'.repeat(w)} `
 			}
+
+			content += `| ${'-'.repeat(w)} `
 		}
 		else {
 			let colspan = 0
+			let sum = 0
 
 			for (let i = 0; i < nbRowHeaders; ++i) {
 				if (row.cells[i].length) {
@@ -236,21 +242,30 @@ function buildPurchaseContent({ nbRowHeaders, headers, rows, max, links, current
 					let purchase = row.search.purchase[name]
 
 					if(purchase) {
+						sum += parseFloat(purchase) || 0
+
 						if(typeof purchase !== 'string') {
 							purchase = `${purchase.toFixed(1)}g`
 						}
 
-						content += `| ${' '.repeat(7 - purchase.length)}${purchase} `
+						content += `| ${' '.repeat(w - purchase.length)}${purchase} `
 					}
 					else {
-						content += `| ${' '.repeat(7)} `
+						content += `| ${' '.repeat(w)} `
 					}
 				}
 			}
 			else {
 				for (const header of headers) {
-					content += `| ${' '.repeat(7)} `
+					content += `| ${' '.repeat(w)} `
 				}
+			}
+
+			if(sum === 0) {
+				content += `| ${' '.repeat(w)} `
+			}
+			else {
+				content += `| ${' '.repeat(w - sum.toFixed(1).length - 1)}${sum.toFixed(1)}g `
 			}
 		}
 
