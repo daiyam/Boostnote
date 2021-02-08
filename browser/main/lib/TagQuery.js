@@ -115,9 +115,9 @@ export class TagQuery {
 		router.push({
 			pathname: this.toPath(),
 			query: {
-			key: location.query.key || '',
-			search: location.query.search || '',
-			storage: location.query.storage || ''
+				key: location.query.key || '',
+				search: location.query.search || '',
+				storage: location.query.storage || ''
 			}
 		})
 	}

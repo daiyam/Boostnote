@@ -22,15 +22,33 @@ import context from 'browser/lib/context'
 import { remote } from 'electron'
 import { confirmDeleteNote } from 'browser/lib/confirmDeleteNote'
 import { TagQuery, TagState } from 'browser/main/lib/TagQuery'
+import modal from 'browser/main/lib/modal'
+import CreateFilterModal from 'browser/main/modals/CreateFilterModal'
+import { confirmDeleteFilter } from 'browser/lib/confirmDeleteFilter'
+
+function getSelectedFilter(query, filters) { // {{{
+	for (const [index, filter] of filters.entries()) {
+		if(
+			filter.includes.length === query.includes.length &&
+			filter.excludes.length === query.excludes.length &&
+			filter.includes.every(tag => query.includes.includes(tag)) &&
+			filter.excludes.every(tag => query.excludes.includes(tag))
+		) {
+			return `f${index}`
+		}
+	}
+
+	return ''
+} // }}}
 
 class SideNav extends React.Component {
-	constructor(props) {
+	constructor(props) { // {{{
 		super(props)
 
 		this.state = {
 			prefix: ''
 		}
-	}
+	} // }}}
 
 	componentDidMount() { // {{{
 		ee.on('side:preferences', this.handleMenuButtonClick)
@@ -95,6 +113,36 @@ class SideNav extends React.Component {
 		query.navigate(location, router)
 	} // }}}
 
+	handleCreateFilter() { // {{{
+		const { config, dispatch, location } = this.props
+		const query = new TagQuery(location.pathname)
+
+		modal.open(CreateFilterModal, { dispatch, filters: config.tagFilters, query })
+	} // }}}
+
+	handleDeleteFilter(e, name) { // {{{
+		if (confirmDeleteFilter()) {
+			const { dispatch } = this.props
+
+			const tagFilters = [...this.props.config.tagFilters]
+
+			const index = parseInt(name.substr(1))
+
+			tagFilters.splice(index, 1)
+
+			const config = {
+				tagFilters
+			}
+
+			ConfigManager.set(config)
+
+			dispatch({
+				type: 'SET_CONFIG',
+				config
+			})
+		}
+	} // }}}
+
 	handleDeleteTagClick(tag) { // {{{
 		const selectedButton = remote.dialog.showMessageBox(remote.getCurrentWindow(), {
 			ype: 'warning',
@@ -145,6 +193,25 @@ class SideNav extends React.Component {
 		context.popup([
 			{ label: i18n.__('Empty Trash'), click: () => this.emptyTrash(trashedNotes) }
 		])
+	} // }}}
+
+	handleFilterChange(e) { // {{{
+		if(e.target.value) {
+			const { router } = this.context
+			const { config, location } = this.props
+			const index = parseInt(e.target.value.substr(1))
+			const filter = config.tagFilters[index]
+
+			const query = new TagQuery()
+
+			query.addPositiveTag(...filter.includes)
+			query.addNegativeTag(...filter.excludes)
+
+			query.navigate(location, router)
+		}
+		else {
+			e.preventDefault()
+		}
 	} // }}}
 
 	handleHomeButtonClick(e) { // {{{
@@ -219,6 +286,7 @@ class SideNav extends React.Component {
 		}
 
 		ConfigManager.set(config)
+
 		dispatch({
 			type: 'SET_CONFIG',
 			config
@@ -269,6 +337,7 @@ class SideNav extends React.Component {
 		const { dispatch, config } = this.props
 
 		ConfigManager.set({ isSideNavFolded: !config.isSideNavFolded })
+
 		dispatch({
 			type: 'SET_IS_SIDENAV_FOLDED',
 			isFolded: !config.isSideNavFolded
@@ -455,6 +524,8 @@ class SideNav extends React.Component {
 
 	renderTagMode(isFolded, storageList) { // {{{
 		const { location, data, config } = this.props
+		const query = new TagQuery(location.pathname)
+		const filter = getSelectedFilter(query, config.tagFilters)
 
 		const prefixes = []
 		if (typeof location.query.storage !== 'undefined' && location.query.storage !== '') {
@@ -536,6 +607,35 @@ class SideNav extends React.Component {
 								))
 							])}
 						</select>
+					</div>
+					<div styleName='tag-control-filter'>
+						<i className='fa fa-angle-down' />
+						<select styleName='tag-control-filter-select'
+							value={filter}
+							onChange={(e) => this.handleFilterChange(e)}
+						>
+							<option value=''></option>
+							{config.tagFilters.map((filter, index) => <option value={`f${index}`}>{filter.name}</option>)}
+						</select>
+						{
+							filter.length === 0 &&
+							(query.includes.length !== 0 || query.excludes.length !== 0) &&
+							<button
+								styleName='tag-control-filter-btn'
+								onClick={(e) => this.handleCreateFilter(e)}
+							>
+								<i className='fa fa-fw fa-plus' />
+							</button>
+						}
+						{
+							filter.length !== 0 &&
+							<button
+								styleName='tag-control-filter-btn'
+								onClick={(e) => this.handleDeleteFilter(e, filter)}
+							>
+								<i className='fa fa-fw fa-times' />
+							</button>
+						}
 					</div>
 				</div>
 			</div>

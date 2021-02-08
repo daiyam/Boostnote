@@ -82,7 +82,8 @@ export const DEFAULT_CONFIG = {
     token: '',
     username: '',
     password: ''
-  }
+  },
+  tagFilters: []
 }
 
 function validate (config) {

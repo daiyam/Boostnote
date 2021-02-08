@@ -35,13 +35,13 @@
   overflow hidden
   .tag-control-prefix
     flex-grow 1
-  .tag-control-sortTagsBy, .tag-control-storage, .tag-control-prefix
+  .tag-control-sortTagsBy, .tag-control-storage, .tag-control-prefix, .tag-control-filter
     user-select none
     font-size 12px
     color $ui-inactive-text-color
     margin-left 12px
     margin-right 12px
-    .tag-control-sortTagsBy-select, .tag-control-storage-select, .tag-control-prefix-select
+    .tag-control-sortTagsBy-select, .tag-control-storage-select, .tag-control-prefix-select, .tag-control-filter-select
       appearance: none;
       margin-left 5px
       color $ui-inactive-text-color
@@ -65,8 +65,24 @@
       background-color transparent
       color #999
   .tag-control-storage
-    margin 8px 12px
-    line-height normal
+    display flex
+    align-items center
+  .tag-control-filter
+    display flex
+    align-items center
+    flex-grow 1
+    margin-right 12px
+    .tag-control-filter-select
+      flex-grow 1
+    .tag-control-filter-btn
+      height 16px
+      width 16px
+      z-index 300
+      border none
+      background-color transparent
+      color #999
+      padding 0
+      margin-left 2px
 
 .tagList
   overflow-y auto
