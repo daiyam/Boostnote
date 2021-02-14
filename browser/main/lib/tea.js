@@ -12,7 +12,7 @@ const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
 const BEST_HEADER_REGEX = /^\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew\s+\|\s+Time\s+\|\s+Temptr\s+\|/
 const BEST_BREW_NEW_REGEX = /^\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const BEST_BREW_LINE_REGEX = /^\|\s+\|\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
-const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]+\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g(?:\+([\d\.]+)g)?|\[(#[\w\-]+)\])/g
+const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g(?:\+([\d\.]+)g)?|\[(#[\w\-]+)\])/g
 const BREW_NEW_REGEX = /^\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const BREW_LINE_REGEX = /^\|\s+(?:\d+\.\d+)?\s+\|\s+\|\s+\|\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const DEFLIST_LINK_REGEX = /\n\[([\w\-]+)\][ \t]*\n\t~[ \t]+\[[^\]]+\]\(:note:([\w\-]+)\)/g
@@ -1045,14 +1045,12 @@ function markBest(cm, cb) { // {{{
 
 	let match = BREW_NEW_REGEX.exec(cm.getLine(from))
 	let steps = [[match[2], match[3], match[4], match[5], match[6]]]
-	let to = from
 	let l = cm.lineCount()
 	const brew = parseInt(match[2])
 
 	for(let i = from + 1; i < l ; ++i) {
 		if((match = BREW_LINE_REGEX.exec(cm.getLine(i)))) {
 			steps.push(['', '', match[1], match[2], match[3]])
-			to = i
 		}
 		else {
 			break
@@ -1072,8 +1070,7 @@ function markBest(cm, cb) { // {{{
 
 		bests = { from: l + 3, to: l + 4, brews: {} }
 	}
-
-	if(bests.brews[brew]) {
+	else if(bests.brews[brew]) {
 		return
 	}
 
