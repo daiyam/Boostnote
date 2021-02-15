@@ -481,7 +481,11 @@ class SideNav extends React.Component {
 				.filter(tag => tag.size > 0 && (!prefix || tag.name[0] === prefix))
 		}
 
-		query.forEachNegatives((name) => tagList.push({ name, size: 0, related: true }))
+		query.forEachNegatives((name) => {
+			if(!prefix || name[0] === prefix) {
+				tagList.push({ name, size: 0, related: true })
+			}
+		})
 
 		tagList = _.sortBy(tagList, ['name'])
 
