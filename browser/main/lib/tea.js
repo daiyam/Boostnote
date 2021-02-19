@@ -22,7 +22,7 @@ const MIX_DEF_BEGIN_REGEX = /\n\[(#?[\w\-]+)\][ \t]*\n\t~[ \t]+\-[ \t]+([\d\.]+)
 const MIX_DEF_LINE_REGEX = /^\n[ \t]{2,}\-[ \t]+([\d\.]+)g[ \t]+\[([\w\-]+)\][ \t]*\n/
 const MIX_RUN_REGEX = /\n\|\s+(\d+\.\d+)\s+\|\s+\|\s+\|\s+([\d\.]+)g\s+\|\s+\|\s+\|\s+\|\s+\|\s+\[([^\]\|]+)\]\s+\|/g
 const NAME_REGEX = /^#+[ \t]+(?:\[([^\]]+)\]|([^\n]+))/
-const REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\((\d+\.\d+\.\d+)(?:,\s+([\d\.]+)g?)?\)[ \t]*/g
+const REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\((\d+\.\d+\.\d+)(?:,\s+([\d\.]+)g?){0,2}\)[ \t]*/g
 const REPORT_HEADER_REGEX = /\|\s+(\d+\.\d+\.\d+)\s+(?=\|)/g
 const TEST_BREW_REGEX = /\s+Date\s+\|\s+Wat\s+\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew\s+\|\s+Time\s+\|\s+Temptr\s+\|\s+Rating\s+\|\s+Tasting Notes\s+\|/
 const TEST_MIX_REGEX = /\n\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[#?[\w\-]+\]/
@@ -506,6 +506,53 @@ function findNote(title, noteMap) { // {{{
 	}
 
 	return null
+} // }}}
+
+function generateConsumptionSteps(firstStep, lastStep, steps, consumptions, total, firstDate, lastRem, lastDate, lastConsumption) { // {{{
+	let remainings = []
+	let differences = []
+	let totals = []
+
+	const firstRem = total.toFixed(1)
+	const mr = firstRem.length
+
+	let md = 0
+	let mt = 0
+
+	let last = 0
+
+	for(let i = firstStep; i < lastStep; ++i) {
+		if(!consumptions[i]) {
+			consumptions[i] = 0
+		}
+
+		remainings[i] = (total - consumptions[i]).toFixed(1)
+		differences[i] = (consumptions[i] - last).toFixed(1)
+		totals[i] = consumptions[i].toFixed(1)
+
+		md = Math.max(md, differences[i].length)
+		mt = Math.max(mt, totals[i].length)
+
+		last = consumptions[i]
+	}
+
+	const ld = (lastConsumption - last).toFixed(1)
+	const lt = lastConsumption.toFixed(1)
+
+	md = Math.max(md, ld.length)
+	mt = Math.max(mt, lt.length)
+
+	let content = ''
+
+	content += `\n\t~ ${firstRem}g (${firstDate.format('DD.MM.YY')})`
+
+	for(let i = firstStep; i < lastStep; ++i) {
+		content += `\n\t~ ${' '.repeat(mr - remainings[i].length)}${remainings[i]}g (${moment(steps[i].date).format('DD.MM.YY')}, ${' '.repeat(md - differences[i].length)}${differences[i]}g, ${' '.repeat(mt - totals[i].length)}${totals[i]}g)`
+	}
+
+	content += `\n\t~ ${' '.repeat(mr - lastRem.length)}${lastRem}g (${lastDate.format('DD.MM.YY')}, ${' '.repeat(md - ld.length)}${ld}g, ${' '.repeat(mt - lt.length)}${lt}g)`
+
+	return content
 } // }}}
 
 function generateCurrentConsumption(noteMap, tagNoteMap, dispatch) { // {{{
@@ -1542,13 +1589,7 @@ function updateRemaining(note, steps, dispatch) { // {{{
 		if(note.tags.includes(EMPTY_TAG)) {
 			const total = raws.reduce((acc, val) => acc + val.weight, 0)
 
-			content += `\n\t~ ${total.toFixed(1)}g (${initial.date.format('DD.MM.YY')})`
-
-			for(let i = firstStep; i < lastStep; ++i) {
-				content += `\n\t~ ${(total - consumptions[i]).toFixed(1)}g (${moment(steps[i].date).format('DD.MM.YY')}, ${consumptions[i] && consumptions[i].toFixed(1) || 0}g)`
-			}
-
-			content += `\n\t~ 0g (${lastDate.format('DD.MM.YY')}, ${total.toFixed(1)}g)`
+			content += generateConsumptionSteps(firstStep, lastStep, steps, consumptions, total, initial.date, '0', lastDate, total)
 
 			const dateTag = getDateTag(lastBrew)
 			let df = false
@@ -1576,16 +1617,9 @@ function updateRemaining(note, steps, dispatch) { // {{{
 		}
 		else {
 			const total = consumption > initial.weight ? consumption + 2 : initial.weight
-
-			content += `\n\t~ ${total.toFixed(1)}g (${initial.date.format('DD.MM.YY')})`
-
-			for(let i = firstStep; i < lastStep; ++i) {
-				content += `\n\t~ ${(total - consumptions[i]).toFixed(1)}g (${moment(steps[i].date).format('DD.MM.YY')}, ${consumptions[i] && consumptions[i].toFixed(1) || 0}g)`
-			}
-
 			const rem = total - consumption
 
-			content += `\n\t~ ${(rem).toFixed(1)}g (${lastDate.format('DD.MM.YY')}, ${consumption.toFixed(1)}g)`
+			content += generateConsumptionSteps(firstStep, lastStep, steps, consumptions, total, initial.date, rem.toFixed(1), lastDate, consumption)
 
 			const dateTag = getDateTag(lastBrew)
 			const weightTag = getWeightTag(rem)

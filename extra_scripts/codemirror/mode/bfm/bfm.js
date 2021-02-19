@@ -9,7 +9,7 @@
   'use strict'
 
   const blankLine = /^\s*$/
-  const definitionRegex = /^\s*[:~]\s+/
+  const definitionRegex = /^\s*[:~]\s/
 
   function matchWithBlankLine(stream, regex) {
     let index = 0
@@ -220,8 +220,6 @@
         } else if (state.definitionTerm) {
           if (stream.match(definitionRegex)) {
             state.definitionIndent = true
-
-            stream.eatSpace()
 
             return 'deflist deflist-indent'
           } else {
