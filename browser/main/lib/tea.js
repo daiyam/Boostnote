@@ -765,7 +765,7 @@ function generatePurchase(noteMap, tagNoteMap, dispatch) { // {{{
 				}
 			}
 
-			REM_REGEX.lastIndex = 0
+			resetRegex(REM_REGEX)
 		}
 	}
 
@@ -978,7 +978,7 @@ function getRemainingAt(note, targetDate, targetStr) { // {{{
 
 		while ((match = REM_REGEX.exec(note.content))) {
 			if(moment(match[2], 'DD.MM.YY') > targetDate) {
-				REM_REGEX.lastIndex = 0
+				resetRegex(REM_REGEX)
 
 				return last
 			}
@@ -1349,6 +1349,10 @@ function resetBrew(cm, cb) { // {{{
 	cb && cb()
 } // }}}
 
+function resetRegex(regex) { // {{{
+	regex.lastIndex = 0
+} // }}}
+
 function restoreReserveValues(content, context) { // {{{
 	const lines = content.split(/\n/)
 	const last = lines.length - 1
@@ -1504,7 +1508,8 @@ function updateMix(note, noteMap, dispatch) { // {{{
 
 			if (match[1] === name) {
 				nf = false
-				LINK_REGEX.lastIndex = 0
+
+				resetRegex(LINK_REGEX)
 			}
 		}
 
@@ -1552,6 +1557,10 @@ function updateRemaining(note, steps, dispatch) { // {{{
 			}
 
 			lastIndex = match.index + match[0].length
+		}
+
+		if(!initial.index) {
+			return false
 		}
 
 		const consumptions = []
@@ -1697,6 +1706,44 @@ function updateRemaining(note, steps, dispatch) { // {{{
 				})
 			}
 		}
+	}
+	else {
+		const match = REM_REGEX.exec(note.content)
+
+		if(match) {
+			const weightTag = getWeightTag(parseFloat(match[1]))
+
+			let updateTags = false
+			let wf = false
+
+			for(let i = note.tags.length - 1; i > 0; --i) {
+				if(note.tags[i][0] === WEIGHT_TAG_PREFIX) {
+					if(note.tags[i] === weightTag) {
+						wf = true
+					}
+					else {
+						note.tags.splice(i, 1)
+						updateTags = true
+					}
+				}
+			}
+
+			if(!wf) {
+				note.tags.push(weightTag)
+				updateTags = true
+			}
+
+			if(updateTags) {
+				dataApi.updateNote(note.storage, note.key, note).then((note) => {
+					dispatch({
+						type: 'UPDATE_NOTE',
+						note
+					})
+				})
+			}
+		}
+
+		resetRegex(REM_REGEX)
 	}
 
 	return true
