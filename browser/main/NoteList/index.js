@@ -579,7 +579,7 @@ class NoteList extends React.Component {
 
 		const pinLabel = note.isPinned ? i18n.__('Remove pin') : i18n.__('Pin to Top')
 		const deleteLabel = i18n.__('Delete Note')
-		const cloneNote = i18n.__('Clone Note')
+		const duplicateNote = i18n.__('Duplicate Note')
 		const restoreNote = i18n.__('Restore Note')
 		const copyNoteLink = i18n.__('Copy Note Link')
 
@@ -604,8 +604,8 @@ class NoteList extends React.Component {
 			}
 
 			templates.push({
-				label: cloneNote,
-				click: this.cloneNote.bind(this)
+				label: duplicateNote,
+				click: this.duplicateNote.bind(this)
 			}, {
 				label: deleteLabel,
 				click: this.deleteNote
@@ -721,20 +721,19 @@ class NoteList extends React.Component {
 		this.setState({ selectedNoteKeys: [] })
 	}
 
-	cloneNote() {
+	duplicateNote() {
 		const { selectedNoteKeys } = this.state
 		const { dispatch, location } = this.props
-		const { storage, folder } = this.resolveTargetFolder()
 		const notes = this.notes.map((note) => Object.assign({}, note))
 		const selectedNotes = findNotesByKeys(notes, selectedNoteKeys)
 		const firstNote = selectedNotes[0]
-		const eventName = firstNote.type === 'MARKDOWN_NOTE' ? 'ADD_MARKDOWN' : 'ADD_SNIPPET'
 
 		dataApi
-			.createNote(storage.key, {
+			.createNote(firstNote.storage, {
 				type: firstNote.type,
-				folder: folder.key,
+				folder: firstNote.folder,
 				title: firstNote.title + ' ' + i18n.__('copy'),
+				tags: [...firstNote.tags],
 				content: firstNote.content
 			})
 			.then((note) => {
