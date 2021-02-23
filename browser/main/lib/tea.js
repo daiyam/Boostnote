@@ -3,6 +3,7 @@ import dataApi from 'browser/main/lib/dataApi'
 import ee from 'browser/main/lib/eventEmitter'
 import moment from 'moment'
 
+const BEST_TAG_PREFIX = '♆'
 const CONTAINER_TAG_PREFIX = '℥'
 const DATE_TAG_PREFIX = '❉'
 const EMPTY_TAG = '⌧⌧⌧'
@@ -12,6 +13,7 @@ const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
 const BEST_HEADER_REGEX = /^\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew\s+\|\s+Time\s+\|\s+Temptr\s+\|/
 const BEST_BREW_NEW_REGEX = /^\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const BEST_BREW_LINE_REGEX = /^\|\s+\|\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
+const BEST_BREW_SEPARATOR_REGEX = /^\|\s+\-+/
 const BREW_REGEX = /\n\|\s+((?:\d+\.)?(\d+\.\d+))\s+\|\s+[\w\+]*\s+\|\s+(?:\d\x)?(?:\d+ml\+)?(?:\d+ml)?\s+\|\s+(?:([\d\.]+)g(?:\+([\d\.]+)g)?|\[(#[\w\-]+)\])/g
 const BREW_NEW_REGEX = /^\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
 const BREW_LINE_REGEX = /^\|\s+(?:\d+\.\d+)?\s+\|\s+\|\s+\|\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
@@ -926,7 +928,10 @@ function getBests(content) { // {{{
 				break
 			}
 
-			if((match = BEST_BREW_NEW_REGEX.exec(line))) {
+			if(BEST_BREW_SEPARATOR_REGEX.test(line)) {
+				// do nothing
+			}
+			else if((match = BEST_BREW_NEW_REGEX.exec(line))) {
 				brew = [[match[1], match[2], match[3], match[4], match[5]]]
 
 				bests.brews[parseInt(match[1])] = brew
@@ -1654,6 +1659,19 @@ function updateRemaining(note, steps, dispatch) { // {{{
 			if(!df) {
 				note.tags.push(dateTag)
 				updateTags = true
+			}
+		}
+
+		const bests = getBests(note.content)
+		if(bests) {
+			for(const best in bests.brews) {
+				const tag = `${BEST_TAG_PREFIX}${'0'.repeat(3 - best.length)}${best}`
+				const nf = !note.tags.some((t) => t === tag)
+
+				if(nf) {
+					note.tags.push(tag)
+					updateTags = true
+				}
 			}
 		}
 
