@@ -183,6 +183,8 @@ export default class CodeEditor extends React.Component {
 				}
 			},
 			Enter: 'boostNewLineAndIndentContinueMarkdownList',
+			'Cmd-[': () => { ee.emit('list:prior') },
+			'Cmd-]': () => { ee.emit('list:next') },
 			[translateHotkey(hotkey.pasteSmartly)]: cm => {
 				this.handlePaste(cm, true)
 			}
@@ -348,6 +350,8 @@ export default class CodeEditor extends React.Component {
 			'Shift-Cmd-L': () => { ee.emit('code:rebrew-last') },
 			'Shift-Cmd-;': (cm) => resetBrew(cm, () => this.tableEditor.format(this.tableEditorOptions)),
 			'Shift-Cmd-B': (cm) => markBest(cm, () => this.tableEditor.format(this.tableEditorOptions)),
+			'Cmd-[': () => { ee.emit('list:prior') },
+			'Cmd-]': () => { ee.emit('list:next') },
 		})
 
 		if (this.props.enableTableEditor) {
