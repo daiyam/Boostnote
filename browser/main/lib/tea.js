@@ -1535,7 +1535,7 @@ function updateMix(note, noteMap, dispatch) { // {{{
 } // }}}
 
 function updateRemaining(note, steps, dispatch) { // {{{
-	if(note.isTrashed || !TEST_REM_REGEX.test(note.content)) {
+	if(note.isTrashed) {
 		return false
 	}
 	else if(note.tags.includes(EMPTY_TAG) && /~\s+0g\s+\(/.test(note.content)) {
@@ -1560,6 +1560,37 @@ function updateRemaining(note, steps, dispatch) { // {{{
 		}
 
 		if(!initial.index) {
+			const lastBrew = raws[raws.length - 1]
+			const dateTag = getDateTag(lastBrew)
+
+			let df = false
+
+			for(let i = note.tags.length - 1; i > 0; --i) {
+				if(note.tags[i][0] === DATE_TAG_PREFIX) {
+					if(note.tags[i] === dateTag) {
+						df = true
+					}
+					else {
+						note.tags.splice(i, 1)
+						updateTags = true
+					}
+				}
+			}
+
+			if(!df) {
+				note.tags.push(dateTag)
+				updateTags = true
+			}
+
+			if(updateTags) {
+				dataApi.updateNote(note.storage, note.key, note).then((note) => {
+					dispatch({
+						type: 'UPDATE_NOTE',
+						note
+					})
+				})
+			}
+
 			return false
 		}
 
