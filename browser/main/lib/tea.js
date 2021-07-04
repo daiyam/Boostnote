@@ -9,6 +9,8 @@ const DATE_TAG_PREFIX = '❉'
 const EMPTY_TAG = '⌧⌧⌧'
 const WEIGHT_TAG_PREFIX = '⚖'
 
+const DELETE_ONEMPTY_TAGS = ['@@@', '⌫⌫⌫', '⎈⎈⎈', '⌽⌽⌽', '⛢⛢⛢']
+
 const AFTER_LAST_REGEX = /(\|[ \t]*\n)\n/
 const BEST_HEADER_REGEX = /^\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew\s+\|\s+Time\s+\|\s+Temptr\s+\|/
 const BEST_BREW_NEW_REGEX = /^\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+([^\|]+?)\s+\|\s+(\S+)\s+/
@@ -25,10 +27,10 @@ const MIX_DEF_LINE_REGEX = /^\n[ \t]{2,}\-[ \t]+([\d\.]+)g[ \t]+\[([\w\-]+)\][ \
 const MIX_RUN_REGEX = /\n\|\s+(\d+\.\d+)\s+\|\s+\|\s+\|\s+([\d\.]+)g\s+\|\s+\|\s+\|\s+\|\s+\|\s+\[([^\]\|]+)\]\s+\|/g
 const NAME_REGEX = /^#+[ \t]+(?:\[([^\]]+)\]|([^\n]+))/
 const REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\((\d+\.\d+\.\d+)(?:,\s+([\d\.]+)g?){0,2}\)[ \t]*/g
+const REM_BLOCK_REGEX = /^(Remaining[^\n]*)((?:\n\t+~\s+[\d\.]+g\s+\(\d+\.\d+\.\d+(?:,\s+[\d\.]+g?){0,2}\)[ \t]*)*)/m
 const REPORT_HEADER_REGEX = /\|\s+(\d+\.\d+\.\d+)\s+(?=\|)/g
 const TEST_BREW_REGEX = /\s+Date\s+\|\s+Wat\s+\|\s+Volum\s+\|\s+Weyt\s+\|\s+Brew\s+\|\s+Time\s+\|\s+Temptr\s+\|\s+Rating\s+\|\s+Tasting Notes\s+\|/
 const TEST_MIX_REGEX = /\n\|\s+(?:\d+\.)?\d+\.\d+\s+\|\s+[\w\+]*\s+\|\s+(?:\d+ml)?\s+\|\s+\[#?[\w\-]+\]/
-const TEST_REM_REGEX = /\n\t+~\s+([\d\.]+)g\s+\([\d\.]+(?:,\s+([\d\.]+)g?)?\)[ \t]*/
 
 function buildConsumptionContent(year, context) { // {{{
 	let content = buildConsumptionTable(`## Tea Consumption 20${year}\n\n\n\n`, year, context)
@@ -960,33 +962,56 @@ function getRemaining(note) { // {{{
 
 	let last = 0
 
-	let match
-	while ((match = REM_REGEX.exec(note.content))) {
-		last = parseFloat(match[1])
+	const block = getRemainingBlock(note.content)
+	if(block) {
+		let match
+		while ((match = REM_REGEX.exec(block.content))) {
+			last = parseFloat(match[1])
+		}
 	}
 
 	return last
 } // }}}
 
 function getRemainingAt(note, targetDate, targetStr) { // {{{
-	let match = RegExp(`\\n\\t~\\s+([\\d\\.]+)g\\s+\\(${targetStr}`).exec(note.content)
-	if(match) {
-		return parseFloat(match[1])
-	}
-	else {
-		let last = 0
+	const block = getRemainingBlock(note.content)
+	if(block) {
+		let match = RegExp(`\\n\\t~\\s+([\\d\\.]+)g\\s+\\(${targetStr}`).exec(block.content)
+		if(match) {
+			return parseFloat(match[1])
+		}
+		else {
+			let last = 0
 
-		while ((match = REM_REGEX.exec(note.content))) {
-			if(moment(match[2], 'DD.MM.YY') > targetDate) {
-				resetRegex(REM_REGEX)
+			while ((match = REM_REGEX.exec(block.content))) {
+				if(moment(match[2], 'DD.MM.YY') > targetDate) {
+					resetRegex(REM_REGEX)
 
-				return last
+					return last
+				}
+
+				last = parseFloat(match[1])
 			}
 
-			last = parseFloat(match[1])
+			return last
 		}
+	}
+	else {
+		return 0
+	}
+} // }}}
 
-		return last
+function getRemainingBlock(content) { // {{{
+	const match = REM_BLOCK_REGEX.exec(content)
+	if(match) {
+		return {
+			content: match[2],
+			begin: match.index + match[1].length,
+			end: match.index + match[0].length
+		}
+	}
+	else {
+		return null
 	}
 } // }}}
 
@@ -1546,18 +1571,16 @@ function updateRemaining(note, steps, dispatch) { // {{{
 
 	if(raws.length) {
 		const initial = {}
-		let lastIndex = -1
 
-		let match
-		while ((match = REM_REGEX.exec(note.content))) {
-			if(!initial.index) {
-				initial.index = match.index
-				initial.weight = parseFloat(match[1])
-				initial.date = moment(match[2], 'DD.MM.YY')
-			}
-
-			lastIndex = match.index + match[0].length
+		const block = getRemainingBlock(note.content)
+		const match = block && REM_REGEX.exec(block.content)
+		if(match) {
+			initial.index = block.begin + match.index
+			initial.weight = parseFloat(match[1])
+			initial.date = moment(match[2], 'DD.MM.YY')
 		}
+
+		resetRegex(REM_REGEX)
 
 		if(!initial.index) {
 			const lastBrew = raws[raws.length - 1]
@@ -1640,7 +1663,7 @@ function updateRemaining(note, steps, dispatch) { // {{{
 			let df = false
 
 			for(let i = note.tags.length - 1; i > 0; --i) {
-				if(note.tags[i][0] === WEIGHT_TAG_PREFIX || note.tags[i][0] === CONTAINER_TAG_PREFIX) {
+				if(note.tags[i][0] === WEIGHT_TAG_PREFIX || note.tags[i][0] === CONTAINER_TAG_PREFIX || DELETE_ONEMPTY_TAGS.includes(note.tags[i])) {
 					note.tags.splice(i, 1)
 					updateTags = true
 				}
@@ -1716,7 +1739,7 @@ function updateRemaining(note, steps, dispatch) { // {{{
 		}
 
 		if(content.length) {
-			content = note.content.slice(0, initial.index) + content + note.content.slice(lastIndex)
+			content = note.content.slice(0, block.begin) + content + note.content.slice(block.end)
 
 			if (sha256(note.content) !== sha256(content)) {
 				note.content = content
@@ -1739,7 +1762,8 @@ function updateRemaining(note, steps, dispatch) { // {{{
 		}
 	}
 	else {
-		const match = REM_REGEX.exec(note.content)
+		const block = getRemainingBlock(note.content)
+		const match = block && REM_REGEX.exec(block.content)
 
 		if(match) {
 			const weightTag = getWeightTag(parseFloat(match[1]))
